@@ -1,0 +1,21 @@
+[package]
+name = "svss"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[dependencies.bevy]
+version = "0.14.0"
+default-features = false
+features = ["bevy_winit", "bevy_sprite", "tonemapping_luts"]
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
+incremental = false
+debug = false
