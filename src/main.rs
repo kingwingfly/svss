@@ -3,6 +3,7 @@
 mod event;
 mod input;
 mod setup;
+mod state;
 
 use bevy::{
     log::{Level, LogPlugin},

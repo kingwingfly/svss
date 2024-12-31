@@ -5,7 +5,7 @@ pub struct MouseClickPlugin;
 
 impl Plugin for MouseClickPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(MouseClickState::default())
+        app.init_resource::<MouseClickState>()
             .add_systems(Update, mouse_click);
     }
 }

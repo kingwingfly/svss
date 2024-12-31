@@ -1,11 +1,12 @@
 use bevy::prelude::*;
+use std::fmt::Debug;
 
 pub struct EventPlugin;
 
 impl Plugin for EventPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MouseClickEvent>()
-            .add_systems(Update, event);
+            .add_systems(Update, (event));
     }
 }
 
@@ -16,8 +17,42 @@ pub enum MouseClickEvent {
     None,
 }
 
-fn event(mut ev_r: EventReader<MouseClickEvent>) {
-    for ev in ev_r.read() {
+fn event(
+    mut cmds: Commands,
+    mut evr: EventReader<MouseClickEvent>,
+    mut windows: Query<&mut Window>,
+    q_camera: Query<(&Camera, &GlobalTransform)>,
+) {
+    let window = windows.single_mut();
+    let (camera, camera_transform) = q_camera.single();
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
+    let Ok(world_position) = camera.viewport_to_world_2d(camera_transform, cursor) else {
+        return;
+    };
+    for ev in evr.read() {
         debug!("{:?}", ev);
+        match ev {
+            MouseClickEvent::SingleClick(_) => {}
+            MouseClickEvent::DoubleClick(mouse_button) => match mouse_button {
+                MouseButton::Left => {
+                    cmds.spawn((
+                        Sprite {
+                            color: Color::WHITE,
+                            custom_size: Some((100., 100.).into()),
+                            ..Default::default()
+                        },
+                        Transform::from_xyz(world_position.x, world_position.y, 0.),
+                    ));
+                }
+                MouseButton::Right => {}
+                MouseButton::Middle => {}
+                MouseButton::Back => {}
+                MouseButton::Forward => {}
+                MouseButton::Other(_) => {}
+            },
+            MouseClickEvent::None => {}
+        }
     }
 }

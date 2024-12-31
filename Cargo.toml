@@ -8,7 +8,16 @@ edition = "2021"
 [dependencies.bevy]
 version = "0.15.0"
 default-features = false
-features = ["bevy_window", "bevy_winit", "bevy_core_pipeline"]
+features = [
+    "bevy_window",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_picking",
+    "bevy_gizmos",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+]
 
 [features]
 default = []
