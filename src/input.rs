@@ -1,3 +1,4 @@
+use crate::event::MouseClickEvent;
 use bevy::prelude::*;
 
 pub struct MouseClickPlugin;
@@ -24,13 +25,6 @@ impl Default for MouseClickState {
             double_click_threshold: 0.3,
         }
     }
-}
-
-#[derive(Debug)]
-enum MouseClickEvent {
-    SingleClick(MouseButton),
-    DoubleClick(MouseButton),
-    None,
 }
 
 impl MouseClickState {
@@ -76,18 +70,16 @@ fn mouse_click(
     time: Res<Time>,
     mouse_input_events: Res<ButtonInput<MouseButton>>,
     mut click_state: ResMut<MouseClickState>,
+    mut ev_w: EventWriter<MouseClickEvent>,
 ) {
     click_state.tick(time.delta());
     let mut btns = mouse_input_events.get_just_pressed();
     loop {
         match click_state.click(btns.next().cloned()) {
-            MouseClickEvent::SingleClick(btn) => {
-                println!("Single click: {:?}", btn);
-            }
-            MouseClickEvent::DoubleClick(btn) => {
-                println!("Double click: {:?}", btn);
-            }
             MouseClickEvent::None => break,
+            ev => {
+                ev_w.send(ev);
+            }
         }
     }
 }
