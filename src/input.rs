@@ -36,6 +36,7 @@ impl MouseClickState {
 
     fn click(&mut self, btn: Option<MouseButton>) -> MouseClickEvent {
         match (self.timer.as_mut(), self.last_btn) {
+            // no btn recorded
             (_, None) => {
                 if btn.is_some() {
                     self.timer = Some(Timer::from_seconds(
@@ -46,16 +47,19 @@ impl MouseClickState {
                 }
                 MouseClickEvent::None
             }
+            // timer finished, sigle click
             (Some(timer), Some(last_btn)) if timer.just_finished() => {
                 self.timer = None;
                 self.last_btn = btn;
                 MouseClickEvent::SingleClick(last_btn)
             }
+            // timer not finished, double click
             (Some(_), Some(last_btn)) if btn == Some(last_btn) => {
                 self.timer = None;
                 self.last_btn = None;
                 MouseClickEvent::DoubleClick(last_btn)
             }
+            // timer not finished, but different btn
             (Some(timer), Some(last_btn)) if btn.is_some() && btn != Some(last_btn) => {
                 timer.reset();
                 self.last_btn = btn;
