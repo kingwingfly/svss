@@ -44,7 +44,21 @@ fn event(
                             ..Default::default()
                         },
                         Transform::from_xyz(world_position.x, world_position.y, 0.),
-                    ));
+                    ))
+                    .observe(
+                        |trigger: Trigger<Pointer<Over>>, mut sprite: Query<&mut Sprite>| {
+                            if let Ok(mut s) = sprite.get_mut(trigger.target) {
+                                s.color = Color::BLACK;
+                            }
+                        },
+                    )
+                    .observe(
+                        |trigger: Trigger<Pointer<Out>>, mut sprite: Query<&mut Sprite>| {
+                            if let Ok(mut s) = sprite.get_mut(trigger.target) {
+                                s.color = Color::WHITE;
+                            }
+                        },
+                    );
                 }
                 MouseButton::Right => {}
                 MouseButton::Middle => {}
