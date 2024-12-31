@@ -78,6 +78,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "agdb"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "198882e0ddf98172e4a0d6ca630f59febffc3b040e2988e23bf982671531b7a5"
+dependencies = [
+ "agdb_derive",
+]
+
+[[package]]
+name = "agdb_derive"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5837bcf52f65db1d0cce81864d37c4d55c183e509cbefbe8bc90e43c6937b5c9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "ahash"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3159,6 +3179,7 @@ checksum = "ce5d813d71d82c4cbc1742135004e4a79fd870214c155443451c139c9470a0aa"
 name = "svss"
 version = "0.1.0"
 dependencies = [
+ "agdb",
  "bevy",
 ]
 

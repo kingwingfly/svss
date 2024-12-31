@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+agdb = { version = "0.9", default-features = false, features = ["derive"] }
 
 [dependencies.bevy]
 version = "0.15.0"
