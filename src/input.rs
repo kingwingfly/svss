@@ -22,7 +22,7 @@ impl Default for MouseClickState {
         Self {
             timer: None,
             last_btn: None,
-            double_click_threshold: 0.3,
+            double_click_threshold: 0.25,
         }
     }
 }
@@ -47,12 +47,12 @@ impl MouseClickState {
                 MouseClickEvent::None
             }
             (Some(timer), Some(last_btn)) if timer.just_finished() => {
-                timer.reset();
+                self.timer = None;
                 self.last_btn = btn;
                 MouseClickEvent::SingleClick(last_btn)
             }
-            (ref mut timer, Some(last_btn)) if btn == Some(last_btn) => {
-                *timer = None;
+            (Some(_), Some(last_btn)) if btn == Some(last_btn) => {
+                self.timer = None;
                 self.last_btn = None;
                 MouseClickEvent::DoubleClick(last_btn)
             }
