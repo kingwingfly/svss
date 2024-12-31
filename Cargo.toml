@@ -17,6 +17,7 @@ features = [
     "bevy_sprite",
     "bevy_text",
     "bevy_ui",
+    "multi_threaded",
 ]
 
 [features]
