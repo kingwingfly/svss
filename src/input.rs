@@ -1,89 +1,74 @@
-use crate::event::MouseClickEvent;
-use bevy::prelude::*;
+use crate::{
+    event::{ClickEvent, TextRefresh},
+    state::{ClickState, KeyboardState},
+};
+use bevy::{
+    input::{
+        keyboard::{Key, KeyboardInput},
+        ButtonState,
+    },
+    prelude::*,
+};
 
-pub struct MouseClickPlugin;
+pub struct InputPlugin;
 
-impl Plugin for MouseClickPlugin {
+impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<MouseClickState>()
-            .add_systems(Update, mouse_click);
+        app.init_resource::<ClickState>()
+            .init_resource::<KeyboardState>()
+            .add_systems(Update, (click, keyboard));
     }
 }
 
-#[derive(Resource, Debug)]
-struct MouseClickState {
-    timer: Option<Timer>,
-    last_btn: Option<MouseButton>,
-    double_click_threshold: f32,
-}
-
-impl Default for MouseClickState {
-    fn default() -> Self {
-        Self {
-            timer: None,
-            last_btn: None,
-            double_click_threshold: 0.25,
-        }
-    }
-}
-
-impl MouseClickState {
-    fn tick(&mut self, duration: std::time::Duration) {
-        if let Some(timer) = self.timer.as_mut() {
-            timer.tick(duration);
-        }
-    }
-
-    fn click(&mut self, btn: Option<MouseButton>) -> MouseClickEvent {
-        match (self.timer.as_mut(), self.last_btn) {
-            // no btn recorded
-            (_, None) => {
-                if btn.is_some() {
-                    self.timer = Some(Timer::from_seconds(
-                        self.double_click_threshold,
-                        TimerMode::Once,
-                    ));
-                    self.last_btn = btn;
-                }
-                MouseClickEvent::None
-            }
-            // timer finished, sigle click
-            (Some(timer), Some(last_btn)) if timer.just_finished() => {
-                self.timer = None;
-                self.last_btn = btn;
-                MouseClickEvent::SingleClick(last_btn)
-            }
-            // timer not finished, double click
-            (Some(_), Some(last_btn)) if btn == Some(last_btn) => {
-                self.timer = None;
-                self.last_btn = None;
-                MouseClickEvent::DoubleClick(last_btn)
-            }
-            // timer not finished, but different btn
-            (Some(timer), Some(last_btn)) if btn.is_some() && btn != Some(last_btn) => {
-                timer.reset();
-                self.last_btn = btn;
-                MouseClickEvent::SingleClick(last_btn)
-            }
-            _ => MouseClickEvent::None,
-        }
-    }
-}
-
-fn mouse_click(
+fn click(
     time: Res<Time>,
     mouse_input_events: Res<ButtonInput<MouseButton>>,
-    mut click_state: ResMut<MouseClickState>,
-    mut ev_w: EventWriter<MouseClickEvent>,
+    mut click_state: ResMut<ClickState>,
+    mut evw: EventWriter<ClickEvent>,
 ) {
     click_state.tick(time.delta());
     let mut btns = mouse_input_events.get_just_pressed();
     loop {
         match click_state.click(btns.next().cloned()) {
-            MouseClickEvent::None => break,
+            ClickEvent::None => break,
             ev => {
-                ev_w.send(ev);
+                evw.send(ev);
             }
+        }
+    }
+}
+
+fn keyboard(
+    mut cmds: Commands,
+    mut keyboard_state: ResMut<KeyboardState>,
+    keys: Res<ButtonInput<KeyCode>>,
+    mut key_evr: EventReader<KeyboardInput>,
+) {
+    let target = keyboard_state.target;
+    if let Some(s) = keyboard_state.input_buf.as_mut() {
+        for key in key_evr.read() {
+            if key.state == ButtonState::Released {
+                continue;
+            }
+            match &key.logical_key {
+                Key::Enter if keys.pressed(KeyCode::ShiftRight) => {
+                    s.push('\n');
+                }
+                Key::Enter => {
+                    debug!("input submit: {}", s);
+                    cmds.trigger_targets(TextRefresh::Finish(s.to_owned()), target);
+                    keyboard_state.input_buf = None;
+                    return;
+                }
+                Key::Backspace => {
+                    s.pop();
+                }
+                Key::Character(c) if c.chars().all(|c| !c.is_control()) => {
+                    s.push_str(c);
+                }
+                _ => {}
+            }
+            cmds.trigger_targets(TextRefresh::Inputing(s.clone()), target);
         }
     }
 }

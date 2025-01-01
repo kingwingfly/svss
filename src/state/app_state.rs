@@ -9,9 +9,9 @@ use bevy::prelude::*;
 pub struct AppState {
     /// each db is a project, containing multiple graphs
     #[cfg(not(debug_assertions))]
-    db: DbImpl<FileStorage>,
+    pub db: DbImpl<FileStorage>,
     #[cfg(debug_assertions)]
-    db: DbImpl<MemoryStorage>,
+    pub db: DbImpl<MemoryStorage>,
 }
 
 impl Default for AppState {
@@ -62,7 +62,7 @@ struct Graph {
 }
 
 #[derive(Debug, UserValue)]
-struct Node {
+struct NodeInfo {
     db_id: Option<DbId>,
     content: String,
     x: f32,

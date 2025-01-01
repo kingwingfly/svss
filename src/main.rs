@@ -10,7 +10,7 @@ use bevy::{
     prelude::*,
 };
 use event::EventPlugin;
-use input::MouseClickPlugin;
+use input::InputPlugin;
 use setup::setup;
 
 fn main() {
@@ -27,7 +27,7 @@ fn main() {
         level: Level::INFO,
         ..Default::default()
     }));
-    app.add_plugins(MouseClickPlugin)
+    app.add_plugins(InputPlugin)
         .add_plugins(EventPlugin)
         .add_systems(Startup, setup)
         .run();
