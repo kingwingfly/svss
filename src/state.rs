@@ -1,18 +1,27 @@
-use agdb::{Db, DbId, QueryBuilder, QueryError, UserValue};
+#[cfg(not(debug_assertions))]
+use agdb::FileStorage;
+#[cfg(debug_assertions)]
+use agdb::MemoryStorage;
+use agdb::{DbId, DbImpl, QueryBuilder, QueryError, UserValue};
 use bevy::prelude::*;
-
-const DB_FILE: &str = concat!(env!("OUT_DIR"), "db_file.agdb");
 
 #[derive(Resource)]
 pub struct AppState {
     /// each db is a project, containing multiple graphs
-    db: Db,
+    #[cfg(not(debug_assertions))]
+    db: DbImpl<FileStorage>,
+    #[cfg(debug_assertions)]
+    db: DbImpl<MemoryStorage>,
 }
 
 impl Default for AppState {
     fn default() -> Self {
-        let mut db = Db::new(DB_FILE).unwrap_or_else(|_| {
-            panic!("{} should be created", DB_FILE);
+        let file = dirs::data_dir()
+            .expect("Data dir should exist")
+            .join("svss")
+            .join("db_file.agdb");
+        let mut db = DbImpl::new(&file.to_string_lossy()).unwrap_or_else(|_| {
+            panic!("{:?} should be created", file);
         });
         db.transaction_mut(|t| -> Result<(), QueryError> {
             let nodes = ["root", "config", "graph", "sub_config"];
@@ -32,7 +41,7 @@ impl Default for AppState {
                         .to(["sub_config"])
                         .query(),
                 )?;
-                info!("Database initialized: {}", DB_FILE);
+                info!("Database initialized: {:?}", file);
             }
             Ok(())
         })
