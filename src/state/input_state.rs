@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::event::ClickEvent;
+const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs
 
 #[derive(Resource, Debug)]
 pub struct KeyboardState {
@@ -18,61 +18,53 @@ impl Default for KeyboardState {
 }
 
 #[derive(Resource, Debug)]
-pub struct ClickState {
-    timer: Option<Timer>,
+pub struct DoubleClickState {
+    timer: Timer,
     last_btn: Option<MouseButton>,
-    double_click_threshold: f32,
 }
 
-impl Default for ClickState {
+impl Default for DoubleClickState {
     fn default() -> Self {
         Self {
-            timer: None,
+            timer: Timer::from_seconds(DOUBLE_CLICK_THRESHOLD, TimerMode::Once),
             last_btn: None,
-            double_click_threshold: 0.25,
         }
     }
 }
 
-impl ClickState {
+impl DoubleClickState {
     pub fn tick(&mut self, duration: std::time::Duration) {
-        if let Some(timer) = self.timer.as_mut() {
-            timer.tick(duration);
-        }
+        self.timer.tick(duration);
     }
 
-    pub fn click(&mut self, btn: Option<MouseButton>) -> ClickEvent {
-        match (self.timer.as_mut(), self.last_btn) {
+    pub fn click(&mut self, btn: Option<MouseButton>) -> Option<MouseButton> {
+        match self.last_btn {
             // no btn recorded
-            (_, None) => {
+            None => {
                 if btn.is_some() {
-                    self.timer = Some(Timer::from_seconds(
-                        self.double_click_threshold,
-                        TimerMode::Once,
-                    ));
+                    self.timer.reset();
                     self.last_btn = btn;
                 }
-                ClickEvent::None
+                None
             }
             // timer finished, sigle click
-            (Some(timer), Some(last_btn)) if timer.just_finished() => {
-                self.timer = None;
+            Some(_) if self.timer.just_finished() => {
+                self.timer.reset();
                 self.last_btn = btn;
-                ClickEvent::SingleClick(last_btn)
+                None
             }
             // timer not finished, double click
-            (Some(_), Some(last_btn)) if btn == Some(last_btn) => {
-                self.timer = None;
+            Some(last_btn) if btn == Some(last_btn) => {
                 self.last_btn = None;
-                ClickEvent::DoubleClick(last_btn)
+                Some(last_btn)
             }
             // timer not finished, but different btn
-            (Some(timer), Some(last_btn)) if btn.is_some() && btn != Some(last_btn) => {
-                timer.reset();
+            Some(last_btn) if btn.is_some() && btn != Some(last_btn) => {
+                self.timer.reset();
                 self.last_btn = btn;
-                ClickEvent::SingleClick(last_btn)
+                None
             }
-            _ => ClickEvent::None,
+            _ => None,
         }
     }
 }
