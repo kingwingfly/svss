@@ -17,7 +17,7 @@ pub struct AppState {
 impl Default for AppState {
     fn default() -> Self {
         let file = dirs::data_dir()
-            .expect("Data dir should exist")
+            .expect("Data dir should be known")
             .join("svss")
             .join("db_file.agdb");
         let mut db = DbImpl::new(&file.to_string_lossy()).unwrap_or_else(|_| {
@@ -45,7 +45,7 @@ impl Default for AppState {
             }
             Ok(())
         })
-        .expect("Db should be initialized");
+        .expect("Database should be initialized");
         Self { db }
     }
 }
