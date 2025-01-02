@@ -2,6 +2,7 @@
 
 mod event;
 mod input;
+mod plugin;
 mod setup;
 mod state;
 
@@ -9,8 +10,8 @@ use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
-use event::EventPlugin;
 use input::InputPlugin;
+use plugin::NodePlugin;
 use setup::setup;
 
 fn main() {
@@ -28,7 +29,7 @@ fn main() {
         ..Default::default()
     }));
     app.add_plugins(InputPlugin)
-        .add_plugins(EventPlugin)
+        .add_plugins(NodePlugin)
         .add_systems(Startup, setup)
         .run();
 }

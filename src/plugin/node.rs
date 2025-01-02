@@ -1,29 +1,20 @@
-use crate::state::KeyboardState;
+use crate::{
+    event::{DoubleClickEvent, TextRefreshEvent},
+    state::KeyboardState,
+};
 use bevy::{color::palettes::css::*, prelude::*};
 
-pub struct EventPlugin;
+pub struct NodePlugin;
 
-impl Plugin for EventPlugin {
+impl Plugin for NodePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<DoubleClickEvent>()
             .add_event::<TextRefreshEvent>()
-            .add_systems(Update, (double_click_event,));
+            .add_systems(Update, (node_create_sys,));
     }
 }
 
-#[derive(Debug, Event)]
-pub struct DoubleClickEvent {
-    pub btn: MouseButton,
-    pub world_pos: Vec2,
-}
-
-#[derive(Debug, Event)]
-pub enum TextRefreshEvent {
-    Inputing(String),
-    Finish(String),
-}
-
-fn double_click_event(
+fn node_create_sys(
     mut cmds: Commands,
     mut double_click_evr: EventReader<DoubleClickEvent>,
     asset_server: Res<AssetServer>,
