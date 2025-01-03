@@ -10,11 +10,11 @@ impl Plugin for NodePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<DoubleClickEvent>()
             .add_event::<TextRefreshEvent>()
-            .add_systems(Update, (node_create_sys,));
+            .add_systems(Update, (node_create,));
     }
 }
 
-fn node_create_sys(
+fn node_create(
     mut cmds: Commands,
     mut double_click_evr: EventReader<DoubleClickEvent>,
     asset_server: Res<AssetServer>,
