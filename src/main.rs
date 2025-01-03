@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod camera;
 mod event;
 mod graph;
 mod input;
@@ -10,6 +11,7 @@ use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
+use camera::MyCameraPlugin;
 use graph::NodePlugin;
 use input::InputPlugin;
 use setup::setup;
@@ -30,6 +32,7 @@ fn main() {
     }));
     app.add_plugins(InputPlugin)
         .add_plugins(NodePlugin)
+        .add_plugins(MyCameraPlugin)
         .add_systems(Startup, setup)
         .run();
 }
