@@ -19,15 +19,15 @@ fn node_create(
     mut double_click_evr: EventReader<DoubleClickEvent>,
     asset_server: Res<AssetServer>,
     // double click leads text input target change
-    mut keyboard_state: ResMut<TextInputState>,
+    mut text_input_state: ResMut<TextInputState>,
 ) {
     for ev in double_click_evr.read() {
         debug!("{:?}", ev);
         match ev.btn {
             MouseButton::Left => {
-                if keyboard_state.target != Entity::PLACEHOLDER {
-                    let target = keyboard_state.target;
-                    cmds.trigger_targets(TextRefreshEvent(keyboard_state.reset()), target);
+                if text_input_state.target != Entity::PLACEHOLDER {
+                    let target = text_input_state.target;
+                    cmds.trigger_targets(TextRefreshEvent(text_input_state.reset()), target);
                 }
                 cmds.spawn((
                     Sprite {
@@ -49,7 +49,7 @@ fn node_create(
                         TextColor(BLUE.into()),
                         Transform::from_xyz(0., 0., 1.),
                     ));
-                    keyboard_state.target = entity_cmds.id();
+                    text_input_state.target = entity_cmds.id();
                     entity_cmds.observe(
                         move |trigger: Trigger<TextRefreshEvent>, mut text: Query<&mut Text2d>| {
                             if let Ok(mut t) = text.get_mut(trigger.entity()) {
