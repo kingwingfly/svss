@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use core::fmt;
 
-const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs
+const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 
 #[derive(Resource, Debug)]
 pub struct KeyboardState {
