@@ -1,8 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod event;
+mod graph;
 mod input;
-mod plugin;
 mod setup;
 mod state;
 
@@ -10,8 +10,8 @@ use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
+use graph::NodePlugin;
 use input::InputPlugin;
-use plugin::NodePlugin;
 use setup::setup;
 
 fn main() {
