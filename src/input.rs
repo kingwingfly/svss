@@ -16,11 +16,11 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<DoubleClickState>()
             .init_resource::<KeyboardState>()
-            .add_systems(Update, (click, keyboard));
+            .add_systems(Update, (double, text_input));
     }
 }
 
-fn click(
+fn double(
     time: Res<Time>,
     mouse_input_events: Res<ButtonInput<MouseButton>>,
     mut click_state: ResMut<DoubleClickState>,
@@ -48,37 +48,35 @@ fn click(
     }
 }
 
-fn keyboard(
+fn text_input(
     mut cmds: Commands,
     mut keyboard_state: ResMut<KeyboardState>,
     keys: Res<ButtonInput<KeyCode>>,
     mut key_evr: EventReader<KeyboardInput>,
 ) {
     let target = keyboard_state.target;
-    if let Some(s) = keyboard_state.input_buf.as_mut() {
-        for key in key_evr.read() {
-            if key.state == ButtonState::Released {
-                continue;
-            }
-            match &key.logical_key {
-                Key::Enter if keys.pressed(KeyCode::ShiftRight) => {
-                    s.push('\n');
-                }
-                Key::Enter => {
-                    debug!("input submit: {}", s);
-                    cmds.trigger_targets(TextRefreshEvent::Finish(s.to_owned()), target);
-                    keyboard_state.input_buf = None;
-                    return;
-                }
-                Key::Backspace => {
-                    s.pop();
-                }
-                Key::Character(c) if c.chars().all(|c| !c.is_control()) => {
-                    s.push_str(c);
-                }
-                _ => {}
-            }
-            cmds.trigger_targets(TextRefreshEvent::Inputing(s.clone()), target);
+    if target == Entity::PLACEHOLDER {
+        return;
+    }
+    for key in key_evr.read() {
+        if key.state == ButtonState::Released {
+            continue;
         }
+        match &key.logical_key {
+            Key::Enter if keys.pressed(KeyCode::ShiftRight) => keyboard_state.new_line(),
+            Key::Enter => {
+                debug!("input submit: {}", *keyboard_state);
+                cmds.trigger_targets(TextRefreshEvent(keyboard_state.reset()), target);
+                return;
+            }
+            Key::Backspace => keyboard_state.backspace(),
+            Key::ArrowLeft => keyboard_state.move_left(),
+            Key::ArrowRight => keyboard_state.move_right(),
+            Key::ArrowUp => keyboard_state.move_up(),
+            Key::ArrowDown => keyboard_state.move_down(),
+            Key::Character(c) if c.chars().all(|c| !c.is_control()) => keyboard_state.insert_str(c),
+            _ => {}
+        }
+        cmds.trigger_targets(TextRefreshEvent(keyboard_state.to_string()), target);
     }
 }

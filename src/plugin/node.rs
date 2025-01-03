@@ -26,12 +26,8 @@ fn node_create_sys(
         match ev.btn {
             MouseButton::Left => {
                 if keyboard_state.target != Entity::PLACEHOLDER {
-                    if let Some(s) = keyboard_state.input_buf.as_ref() {
-                        cmds.trigger_targets(
-                            TextRefreshEvent::Finish(s.to_owned()),
-                            keyboard_state.target,
-                        );
-                    }
+                    let target = keyboard_state.target;
+                    cmds.trigger_targets(TextRefreshEvent(keyboard_state.reset()), target);
                 }
                 cmds.spawn((
                     Sprite {
@@ -53,19 +49,11 @@ fn node_create_sys(
                         TextColor(BLUE.into()),
                         Transform::from_xyz(0., 0., 1.),
                     ));
-                    keyboard_state.input_buf = Some(String::new());
                     keyboard_state.target = entity_cmds.id();
                     entity_cmds.observe(
                         move |trigger: Trigger<TextRefreshEvent>, mut text: Query<&mut Text2d>| {
                             if let Ok(mut t) = text.get_mut(trigger.entity()) {
-                                match trigger.event() {
-                                    TextRefreshEvent::Inputing(s) => {
-                                        t.0 = format!("{s}|");
-                                    }
-                                    TextRefreshEvent::Finish(s) => {
-                                        t.0 = s.to_owned();
-                                    }
-                                }
+                                t.0 = trigger.event().0.clone();
                             }
                         },
                     );
