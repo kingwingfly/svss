@@ -16,11 +16,11 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<DoubleClickState>()
             .init_resource::<KeyboardState>()
-            .add_systems(Update, (double, text_input));
+            .add_systems(Update, (double_click, text_input));
     }
 }
 
-fn double(
+fn double_click(
     time: Res<Time>,
     mouse_input_events: Res<ButtonInput<MouseButton>>,
     mut click_state: ResMut<DoubleClickState>,
