@@ -1,6 +1,6 @@
 use crate::{
     event::{DoubleClickEvent, TextRefreshEvent},
-    state::KeyboardState,
+    state::TextInputState,
 };
 use bevy::{color::palettes::css::*, prelude::*};
 
@@ -19,7 +19,7 @@ fn node_create(
     mut double_click_evr: EventReader<DoubleClickEvent>,
     asset_server: Res<AssetServer>,
     // double click leads text input target change
-    mut keyboard_state: ResMut<KeyboardState>,
+    mut keyboard_state: ResMut<TextInputState>,
 ) {
     for ev in double_click_evr.read() {
         debug!("{:?}", ev);

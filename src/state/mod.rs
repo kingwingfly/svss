@@ -2,4 +2,4 @@ mod app_state;
 mod input_state;
 
 pub use app_state::AppState;
-pub use input_state::{DoubleClickState, KeyboardState};
+pub use input_state::{DoubleClickState, TextInputState};

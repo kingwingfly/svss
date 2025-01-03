@@ -1,4 +1,4 @@
-use crate::{event::TextRefreshEvent, state::KeyboardState};
+use crate::{event::TextRefreshEvent, state::TextInputState};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -9,7 +9,7 @@ use bevy::{
 
 pub fn text_input(
     mut cmds: Commands,
-    mut keyboard_state: ResMut<KeyboardState>,
+    mut keyboard_state: ResMut<TextInputState>,
     keys: Res<ButtonInput<KeyCode>>,
     mut key_evr: EventReader<KeyboardInput>,
 ) {

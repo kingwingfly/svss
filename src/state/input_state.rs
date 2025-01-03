@@ -4,13 +4,13 @@ use core::fmt;
 const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 
 #[derive(Resource, Debug)]
-pub struct KeyboardState {
+pub struct TextInputState {
     input_buf: Vec<String>,
     cursor: (usize, usize),
     pub target: Entity,
 }
 
-impl Default for KeyboardState {
+impl Default for TextInputState {
     fn default() -> Self {
         Self {
             input_buf: vec![String::new()],
@@ -20,7 +20,7 @@ impl Default for KeyboardState {
     }
 }
 
-impl KeyboardState {
+impl TextInputState {
     pub fn reset(&mut self) -> String {
         let res = self.input_buf.join("\n");
         *self = Self::default();
@@ -101,7 +101,7 @@ impl KeyboardState {
     }
 }
 
-impl fmt::Display for KeyboardState {
+impl fmt::Display for TextInputState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, line) in self.input_buf.iter().enumerate() {
             if i == self.cursor.0 {
