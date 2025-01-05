@@ -39,12 +39,14 @@ fn node_create(
                 ))
                 .observe(
                     |trigger: Trigger<Pointer<Drag>>,
-                     mut q_sprite: Query<&mut Transform, With<Sprite>>,
-                     q_camera: Query<&Transform, (With<Camera2d>, Without<Sprite>)>| {
-                        let scale = q_camera.single().scale.x;
-                        if let Ok(mut transform) = q_sprite.get_mut(trigger.entity()) {
-                            transform.translation.x += trigger.event().delta.x * scale;
-                            transform.translation.y -= trigger.event().delta.y * scale;
+                     mut q: ParamSet<(
+                        Query<&mut Transform, With<Sprite>>,
+                        Query<&Transform, With<Camera2d>>,
+                    )>| {
+                        let scale = q.p1().single().scale;
+                        if let Ok(mut transform) = q.p0().get_mut(trigger.entity()) {
+                            transform.translation.x += trigger.event().delta.x * scale.x;
+                            transform.translation.y -= trigger.event().delta.y * scale.y;
                         }
                     },
                 )
