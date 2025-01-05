@@ -1,8 +1,7 @@
 use crate::state::TextInputState;
-use bevy::{
-    input::{gestures::PinchGesture, mouse::MouseWheel},
-    prelude::*,
-};
+#[cfg(not(target_os = "macos"))]
+use bevy::input::gestures::PinchGesture;
+use bevy::{input::mouse::MouseWheel, prelude::*};
 
 const MOVE_SPEED: f32 = 50.0;
 
@@ -58,6 +57,6 @@ pub fn camera_scale(
 ) {
     let (_, mut transform) = q_camera.single_mut();
     for ev in mouse_wheel_evr.read() {
-        transform.scale = (transform.scale - ev.y / 50.).max(Vec3::splat(0.125));
+        transform.scale = (transform.scale - (ev.y / 8.)).max(Vec3::splat(0.125));
     }
 }
