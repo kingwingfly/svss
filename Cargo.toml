@@ -8,14 +8,13 @@ agdb = { version = "0.9", default-features = false, features = ["derive"] }
 dirs = { version = "5.0.1", default-features = false, features = [] }
 
 [dependencies.bevy]
-version = "0.15.0"
+version = "0.15.1"
 default-features = false
 features = [
     "bevy_window",
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_picking",
-    "bevy_gizmos",
     "bevy_sprite",
     "bevy_text",
     "bevy_ui",
