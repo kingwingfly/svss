@@ -7,6 +7,7 @@ const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 pub struct TextInputState {
     input_buf: Vec<String>,
     cursor: (usize, usize),
+    submitted: bool,
     pub target: Entity,
 }
 
@@ -15,16 +16,27 @@ impl Default for TextInputState {
         Self {
             input_buf: vec![String::new()],
             cursor: (0, 0),
+            submitted: false,
             target: Entity::PLACEHOLDER,
         }
     }
 }
 
 impl TextInputState {
-    pub fn reset(&mut self) -> String {
-        let res = self.input_buf.join("\n");
+    pub fn reset(&mut self) {
         *self = Self::default();
-        res
+    }
+
+    pub fn submit(&mut self) {
+        self.submitted = true;
+    }
+
+    pub fn height(&self) -> usize {
+        self.input_buf.len()
+    }
+
+    pub fn width(&self) -> usize {
+        self.input_buf.iter().map(|s| s.len()).max().unwrap_or(0)
     }
 
     pub fn move_left(&mut self) {
@@ -103,14 +115,26 @@ impl TextInputState {
 
 impl fmt::Display for TextInputState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (i, line) in self.input_buf.iter().enumerate() {
-            if i == self.cursor.0 {
-                write!(f, "{}|{}", &line[..self.cursor.1], &line[self.cursor.1..])?;
-            } else {
-                write!(f, "{}", line)?;
+        match self.submitted {
+            true => {
+                for (i, line) in self.input_buf.iter().enumerate() {
+                    write!(f, "{}", line)?;
+                    if i != self.input_buf.len() - 1 {
+                        writeln!(f)?;
+                    }
+                }
             }
-            if i != self.input_buf.len() - 1 {
-                writeln!(f)?;
+            false => {
+                for (i, line) in self.input_buf.iter().enumerate() {
+                    if i == self.cursor.0 {
+                        write!(f, "{}|{}", &line[..self.cursor.1], &line[self.cursor.1..])?;
+                    } else {
+                        write!(f, "{}", line)?;
+                    }
+                    if i != self.input_buf.len() - 1 {
+                        writeln!(f)?;
+                    }
+                }
             }
         }
         Ok(())

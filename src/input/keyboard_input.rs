@@ -25,7 +25,9 @@ pub fn text_input(
             Key::Enter if keys.pressed(KeyCode::ShiftRight) => text_input_state.new_line(),
             Key::Enter => {
                 debug!("input submit: {}", *text_input_state);
-                cmds.trigger_targets(TextRefreshEvent(text_input_state.reset()), target);
+                text_input_state.submit();
+                cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
+                text_input_state.reset();
                 return;
             }
             Key::Backspace => text_input_state.backspace(),
@@ -38,6 +40,6 @@ pub fn text_input(
             }
             _ => {}
         }
-        cmds.trigger_targets(TextRefreshEvent(text_input_state.to_string()), target);
+        cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
     }
 }

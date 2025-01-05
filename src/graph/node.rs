@@ -4,6 +4,10 @@ use crate::{
 };
 use bevy::{color::palettes::css::*, prelude::*};
 
+const FONT_WIDTH: f32 = 18.0;
+const FONT_HEIGHT: f32 = 18.0 * 1.2;
+const CUSTOM_SIZE: Vec2 = Vec2::new(FONT_WIDTH * 2., FONT_HEIGHT * 2.);
+
 pub struct NodePlugin;
 
 impl Plugin for NodePlugin {
@@ -27,17 +31,20 @@ fn node_create(
             MouseButton::Left => {
                 if text_input_state.target != Entity::PLACEHOLDER {
                     let target = text_input_state.target;
-                    cmds.trigger_targets(TextRefreshEvent(text_input_state.reset()), target);
+                    text_input_state.submit();
+                    cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
+                    text_input_state.reset();
                 }
-                cmds.spawn((
+                let mut sprite_cmds = cmds.spawn((
                     Sprite {
                         color: Color::WHITE,
-                        custom_size: Some((100., 100.).into()),
+                        custom_size: Some(CUSTOM_SIZE),
                         ..Default::default()
                     },
                     Transform::from_xyz(ev.world_pos.x, ev.world_pos.y, 0.),
-                ))
-                .observe(
+                ));
+                let sprite_id = sprite_cmds.id();
+                sprite_cmds.observe(
                     |trigger: Trigger<Pointer<Drag>>,
                      mut q: ParamSet<(
                         Query<&mut Transform, With<Sprite>>,
@@ -49,25 +56,38 @@ fn node_create(
                             transform.translation.y -= trigger.event().delta.y * scale.y;
                         }
                     },
-                )
-                .with_children(|p| {
+                );
+                let target_mut = &mut text_input_state.target;
+                let asset_server_ref = &asset_server;
+                sprite_cmds.with_children(move |p| {
                     let mut entity_cmds = p.spawn((
                         Text2d::new("|"),
                         TextFont {
-                            font: asset_server.load("fonts/FiraCode-Retina.ttf"),
-                            font_size: 18.0,
+                            font: asset_server_ref.load("fonts/FiraCode-Retina.ttf"),
+                            font_size: FONT_WIDTH,
                             ..default()
                         },
                         TextLayout::new_with_justify(JustifyText::Center),
                         TextColor(BLUE.into()),
                         Transform::from_xyz(0., 0., 1.),
                     ));
-                    text_input_state.target = entity_cmds.id();
+                    *target_mut = entity_cmds.id();
                     entity_cmds.observe(
                         move |trigger: Trigger<TextRefreshEvent>,
-                              mut q_text: Query<&mut Text2d>| {
+                              mut q_text: Query<&mut Text2d>,
+                              mut q_sprite: Query<&mut Sprite>| {
+                            let ev = trigger.event();
                             if let Ok(mut t) = q_text.get_mut(trigger.entity()) {
-                                t.0 = trigger.event().0.clone();
+                                t.0 = ev.text.clone();
+                            }
+                            if let Ok(mut s) = q_sprite.get_mut(sprite_id) {
+                                s.custom_size = Some(
+                                    CUSTOM_SIZE
+                                        + Vec2::new(
+                                            ev.width * FONT_WIDTH,
+                                            (ev.height - 1.) * FONT_HEIGHT,
+                                        ),
+                                );
                             }
                         },
                     );
