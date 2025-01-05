@@ -7,7 +7,8 @@ const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 pub struct TextInputState {
     input_buf: Vec<String>,
     cursor: (usize, usize),
-    submitted: bool,
+    /// influence the rendering of the text
+    to_submit: bool,
     pub target: Entity,
 }
 
@@ -16,7 +17,7 @@ impl Default for TextInputState {
         Self {
             input_buf: vec![String::new()],
             cursor: (0, 0),
-            submitted: false,
+            to_submit: false,
             target: Entity::PLACEHOLDER,
         }
     }
@@ -28,7 +29,7 @@ impl TextInputState {
     }
 
     pub fn submit(&mut self) {
-        self.submitted = true;
+        self.to_submit = true;
     }
 
     pub fn height(&self) -> usize {
@@ -115,7 +116,7 @@ impl TextInputState {
 
 impl fmt::Display for TextInputState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.submitted {
+        match self.to_submit {
             true => {
                 for (i, line) in self.input_buf.iter().enumerate() {
                     write!(f, "{}", line)?;
