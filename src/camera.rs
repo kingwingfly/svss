@@ -1,9 +1,9 @@
 use crate::state::TextInputState;
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "macos")]
 use bevy::input::gestures::PinchGesture;
 use bevy::{input::mouse::MouseWheel, prelude::*};
 
-const MOVE_SPEED: f32 = 50.0;
+const MOVE_SPEED: f32 = 32.0;
 
 pub struct MyCameraPlugin;
 
@@ -41,22 +41,23 @@ pub fn camera_movement(
 
 #[cfg(target_os = "macos")]
 pub fn camera_scale(
-    mut q_camera: Query<(&Camera2d, &mut Transform)>,
+    mut q_camera: Query<&mut Transform, With<Camera2d>>,
     mut gesture_evr: EventReader<PinchGesture>,
 ) {
-    let (_, mut transform) = q_camera.single_mut();
+    let mut transform = q_camera.single_mut();
     for ev in gesture_evr.read() {
-        transform.scale = (transform.scale - ev.0).max(Vec3::splat(0.125));
+        transform.scale = (transform.scale - ev.0).clamp(Vec3::splat(0.125), Vec3::splat(2.));
     }
 }
 
 #[cfg(not(target_os = "macos"))]
 pub fn camera_scale(
-    mut q_camera: Query<(&Camera2d, &mut Transform)>,
+    mut q_camera: Query<&mut Transform, With<Camera2d>>,
     mut mouse_wheel_evr: EventReader<MouseWheel>,
 ) {
-    let (_, mut transform) = q_camera.single_mut();
+    let mut transform = q_camera.single_mut();
     for ev in mouse_wheel_evr.read() {
-        transform.scale = (transform.scale - (ev.y / 8.)).max(Vec3::splat(0.125));
+        transform.scale =
+            (transform.scale - (ev.y / 8.)).clamp(Vec3::splat(0.125), Vec3::splat(2.));
     }
 }

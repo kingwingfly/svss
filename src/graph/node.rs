@@ -38,10 +38,13 @@ fn node_create(
                     Transform::from_xyz(ev.world_pos.x, ev.world_pos.y, 0.),
                 ))
                 .observe(
-                    |trigger: Trigger<Pointer<Drag>>, mut q: Query<&mut Transform>| {
-                        if let Ok(mut s) = q.get_mut(trigger.entity()) {
-                            s.translation.x += trigger.event().delta.x;
-                            s.translation.y -= trigger.event().delta.y;
+                    |trigger: Trigger<Pointer<Drag>>,
+                     mut q_sprite: Query<&mut Transform, With<Sprite>>,
+                     q_camera: Query<&Transform, (With<Camera2d>, Without<Sprite>)>| {
+                        let scale = q_camera.single().scale.x;
+                        if let Ok(mut transform) = q_sprite.get_mut(trigger.entity()) {
+                            transform.translation.x += trigger.event().delta.x * scale;
+                            transform.translation.y -= trigger.event().delta.y * scale;
                         }
                     },
                 )
