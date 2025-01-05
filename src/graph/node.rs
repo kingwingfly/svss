@@ -5,8 +5,8 @@ use crate::{
 use bevy::{color::palettes::css::*, prelude::*};
 
 const FONT_WIDTH: f32 = 18.0;
-const FONT_HEIGHT: f32 = 18.0 * 1.2;
-const CUSTOM_SIZE: Vec2 = Vec2::new(FONT_WIDTH * 2., FONT_HEIGHT * 2.);
+const FONT_HEIGHT: f32 = FONT_WIDTH * 1.2;
+const CUSTOM_SIZE: Vec2 = Vec2::new(FONT_WIDTH, FONT_HEIGHT * 2.);
 
 pub struct NodePlugin;
 

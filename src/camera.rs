@@ -1,7 +1,9 @@
 use crate::state::TextInputState;
 #[cfg(target_os = "macos")]
 use bevy::input::gestures::PinchGesture;
-use bevy::{input::mouse::MouseWheel, prelude::*};
+#[cfg(not(target_os = "macos"))]
+use bevy::input::mouse::MouseWheel;
+use bevy::prelude::*;
 
 const MOVE_SPEED: f32 = 32.0;
 
