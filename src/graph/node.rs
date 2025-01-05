@@ -37,6 +37,14 @@ fn node_create(
                     },
                     Transform::from_xyz(ev.world_pos.x, ev.world_pos.y, 0.),
                 ))
+                .observe(
+                    |trigger: Trigger<Pointer<Drag>>, mut q: Query<&mut Transform>| {
+                        if let Ok(mut s) = q.get_mut(trigger.entity()) {
+                            s.translation.x += trigger.event().delta.x;
+                            s.translation.y -= trigger.event().delta.y;
+                        }
+                    },
+                )
                 .with_children(|p| {
                     let mut entity_cmds = p.spawn((
                         Text2d::new("|"),
@@ -51,8 +59,9 @@ fn node_create(
                     ));
                     text_input_state.target = entity_cmds.id();
                     entity_cmds.observe(
-                        move |trigger: Trigger<TextRefreshEvent>, mut text: Query<&mut Text2d>| {
-                            if let Ok(mut t) = text.get_mut(trigger.entity()) {
+                        move |trigger: Trigger<TextRefreshEvent>,
+                              mut q_text: Query<&mut Text2d>| {
+                            if let Ok(mut t) = q_text.get_mut(trigger.entity()) {
                                 t.0 = trigger.event().0.clone();
                             }
                         },

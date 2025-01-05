@@ -25,13 +25,13 @@ pub fn camera_movement(
         return;
     }
     let (_, mut transform) = q_camera.single_mut();
-    if keyboard.pressed(KeyCode::ArrowLeft) {
+    if keyboard.any_pressed([KeyCode::ArrowLeft, KeyCode::KeyA]) {
         transform.translation.x -= MOVE_SPEED;
-    } else if keyboard.pressed(KeyCode::ArrowRight) {
+    } else if keyboard.any_pressed([KeyCode::ArrowRight, KeyCode::KeyD]) {
         transform.translation.x += MOVE_SPEED;
-    } else if keyboard.pressed(KeyCode::ArrowUp) {
+    } else if keyboard.any_pressed([KeyCode::ArrowUp, KeyCode::KeyW]) {
         transform.translation.y += MOVE_SPEED;
-    } else if keyboard.pressed(KeyCode::ArrowDown) {
+    } else if keyboard.any_pressed([KeyCode::ArrowDown, KeyCode::KeyS]) {
         transform.translation.y -= MOVE_SPEED;
     }
 }
