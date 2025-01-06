@@ -10,6 +10,7 @@ pub struct TextInputState {
     ime_buf_cursor: (usize, usize),
     cursor: (usize, usize),
     to_submit: bool,
+    pub key_cd: Timer,
     /// target entity to receive the text
     pub target: Entity,
 }
@@ -22,6 +23,7 @@ impl Default for TextInputState {
             ime_buf_cursor: (0, 0),
             cursor: (0, 0),
             to_submit: false,
+            key_cd: Timer::from_seconds(0.0625, TimerMode::Once),
             target: Entity::PLACEHOLDER,
         }
     }

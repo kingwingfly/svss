@@ -75,12 +75,17 @@ pub fn text_input(
     mut text_input_state: ResMut<TextInputState>,
     keys: Res<ButtonInput<KeyCode>>,
     mut evr_keys: EventReader<KeyboardInput>,
+    time: Res<Time>,
 ) {
     if text_input_state.target == Entity::PLACEHOLDER {
         return;
     }
+    if !text_input_state.key_cd.tick(time.delta()).just_finished() {
+        return;
+    }
+    text_input_state.key_cd.reset();
     let target = text_input_state.target;
-    for key in keys.get_just_pressed() {
+    for key in keys.get_pressed() {
         match key {
             KeyCode::Enter if keys.pressed(KeyCode::ShiftRight) => text_input_state.new_line(),
             KeyCode::Enter => {
