@@ -38,6 +38,8 @@ pub fn camera_movement(
         transform.translation.y += MOVE_SPEED;
     } else if keyboard.any_pressed([KeyCode::ArrowDown, KeyCode::KeyS]) {
         transform.translation.y -= MOVE_SPEED;
+    } else if keyboard.just_pressed(KeyCode::Space) {
+        transform.translation = Vec3::ZERO;
     }
 }
 
