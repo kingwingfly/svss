@@ -34,7 +34,9 @@ impl Default for TextInputState {
 
 impl TextInputState {
     pub fn reset(&mut self) {
+        let ime_state = self.ime_state;
         *self = Self::default();
+        self.ime_state = ime_state;
     }
 
     /// influence the rendering of the text
@@ -160,6 +162,7 @@ impl TextInputState {
 
     pub fn troggle_ime_state(&mut self) {
         self.ime_state = !self.ime_state;
+        info!("troggle_ime_state: {}", self.ime_state);
     }
 }
 

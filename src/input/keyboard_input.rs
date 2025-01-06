@@ -69,36 +69,40 @@ pub fn text_input(
         return;
     }
     let mut window = q_window.single_mut();
-    if text_input_state.ime_state {
-        window.ime_enabled = true;
-        window.ime_position = text_input_state.ime_position;
-    }
+    window.ime_enabled = text_input_state.ime_state;
+    window.ime_position = text_input_state.ime_position;
     let target = text_input_state.target;
+    for key in keys.get_just_pressed() {
+        match key {
+            KeyCode::Enter if keys.pressed(KeyCode::ShiftRight) => text_input_state.new_line(),
+            KeyCode::Enter => {
+                text_input_state.submit();
+                cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
+                text_input_state.reset();
+                debug!("input submit: {}", *text_input_state);
+                window.ime_enabled = false;
+                return;
+            }
+            KeyCode::ArrowLeft => text_input_state.move_left(),
+            KeyCode::ArrowRight => text_input_state.move_right(),
+            KeyCode::ArrowUp => text_input_state.move_up(),
+            KeyCode::ArrowDown => text_input_state.move_down(),
+            KeyCode::Backspace => text_input_state.backspace(),
+            _ => {}
+        }
+    }
+    if window.ime_enabled {
+        cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
+        return;
+    }
     for key in key_evr.read() {
         if key.state == ButtonState::Released {
             continue;
         }
         match &key.logical_key {
-            Key::Enter if keys.pressed(KeyCode::ShiftRight) => text_input_state.new_line(),
-            Key::Enter => {
-                debug!("input submit: {}", *text_input_state);
-                text_input_state.submit();
-                cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
-                text_input_state.reset();
-                window.ime_enabled = false;
-                return;
+            Key::Character(c) if c.chars().all(|c| !c.is_control()) => {
+                text_input_state.insert_str(c)
             }
-            Key::ArrowLeft => text_input_state.move_left(),
-            Key::ArrowRight => text_input_state.move_right(),
-            Key::ArrowUp => text_input_state.move_up(),
-            Key::ArrowDown => text_input_state.move_down(),
-            Key::Backspace => text_input_state.backspace(),
-            _ if !window.ime_enabled => match &key.logical_key {
-                Key::Character(c) if c.chars().all(|c| !c.is_control()) => {
-                    text_input_state.insert_str(c)
-                }
-                _ => {}
-            },
             _ => {}
         }
         cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
