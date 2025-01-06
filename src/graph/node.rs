@@ -20,11 +20,11 @@ impl Plugin for NodePlugin {
 
 fn node_create(
     mut cmds: Commands,
-    mut double_click_evr: EventReader<DoubleClickEvent>,
+    mut evr_double_click: EventReader<DoubleClickEvent>,
     asset_server: Res<AssetServer>,
     mut text_input_state: ResMut<TextInputState>,
 ) {
-    for ev in double_click_evr.read() {
+    for ev in evr_double_click.read() {
         debug!("{:?}", ev);
         match ev.btn {
             MouseButton::Left => {

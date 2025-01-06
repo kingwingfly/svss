@@ -6,11 +6,10 @@ const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 #[derive(Resource, Debug)]
 pub struct TextInputState {
     input_buf: Vec<Vec<char>>,
-    ime_buf: String,
+    pub ime_buf: String,
     ime_buf_cursor: (usize, usize),
     cursor: (usize, usize),
     to_submit: bool,
-    pub ime_state: bool,
     /// position of IME
     pub ime_position: Vec2,
     /// target entity to receive the text
@@ -25,7 +24,6 @@ impl Default for TextInputState {
             ime_buf_cursor: (0, 0),
             cursor: (0, 0),
             to_submit: false,
-            ime_state: false,
             ime_position: Vec2::ZERO,
             target: Entity::PLACEHOLDER,
         }
@@ -34,9 +32,7 @@ impl Default for TextInputState {
 
 impl TextInputState {
     pub fn reset(&mut self) {
-        let ime_state = self.ime_state;
         *self = Self::default();
-        self.ime_state = ime_state;
     }
 
     /// influence the rendering of the text
@@ -115,7 +111,6 @@ impl TextInputState {
     }
 
     pub fn backspace(&mut self) {
-        debug!("{:?}", self);
         if !self.ime_buf.is_empty() {
             if self.ime_buf.len() == 1 {
                 self.ime_buf.pop();
@@ -158,11 +153,6 @@ impl TextInputState {
     pub fn set_ime_buf(&mut self, s: &str, cursor: (usize, usize)) {
         self.ime_buf = s.to_string();
         self.ime_buf_cursor = cursor;
-    }
-
-    pub fn troggle_ime_state(&mut self) {
-        self.ime_state = !self.ime_state;
-        info!("troggle_ime_state: {}", self.ime_state);
     }
 }
 

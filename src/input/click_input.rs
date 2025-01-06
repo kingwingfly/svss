@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub fn double_click(
     time: Res<Time>,
     mouse_input_events: Res<ButtonInput<MouseButton>>,
-    mut click_state: ResMut<DoubleClickState>,
+    mut click_state: Local<DoubleClickState>,
     mut double_click_evw: EventWriter<DoubleClickEvent>,
     mut windows: Query<&mut Window>,
     q_camera: Query<(&Camera, &GlobalTransform)>,

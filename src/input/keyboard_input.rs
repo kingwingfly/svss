@@ -7,19 +7,31 @@ use bevy::{
     prelude::*,
 };
 
-pub fn ime_toggle(btns: Res<ButtonInput<KeyCode>>, mut text_input_state: ResMut<TextInputState>) {
+pub fn ime_toggle(
+    btns: Res<ButtonInput<KeyCode>>,
+    text_input_state: ResMut<TextInputState>,
+    mut q_window: Query<&mut Window>,
+    mut possiable: Local<bool>,
+) {
     if text_input_state.target == Entity::PLACEHOLDER {
         return;
     }
-    if !btns.just_pressed(KeyCode::ShiftLeft) {
-        return;
+    if btns.just_pressed(KeyCode::ShiftLeft) {
+        *possiable = true;
     }
-    for btn in btns.get_pressed() {
+    for btn in btns.get_just_pressed() {
         if *btn != KeyCode::ShiftLeft {
+            *possiable = false;
             return;
         }
     }
-    text_input_state.troggle_ime_state();
+    if *possiable && btns.just_released(KeyCode::ShiftLeft) {
+        if text_input_state.ime_buf.is_empty() {
+            let mut window = q_window.single_mut();
+            window.ime_enabled = !window.ime_enabled;
+        }
+        *possiable = false;
+    }
 }
 
 pub fn ime_input(
@@ -62,14 +74,13 @@ pub fn text_input(
     mut cmds: Commands,
     mut text_input_state: ResMut<TextInputState>,
     keys: Res<ButtonInput<KeyCode>>,
-    mut key_evr: EventReader<KeyboardInput>,
+    mut evr_keys: EventReader<KeyboardInput>,
     mut q_window: Query<&mut Window>,
 ) {
     if text_input_state.target == Entity::PLACEHOLDER {
         return;
     }
     let mut window = q_window.single_mut();
-    window.ime_enabled = text_input_state.ime_state;
     window.ime_position = text_input_state.ime_position;
     let target = text_input_state.target;
     for key in keys.get_just_pressed() {
@@ -78,9 +89,8 @@ pub fn text_input(
             KeyCode::Enter => {
                 text_input_state.submit();
                 cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
-                text_input_state.reset();
                 debug!("input submit: {}", *text_input_state);
-                window.ime_enabled = false;
+                text_input_state.reset();
                 return;
             }
             KeyCode::ArrowLeft => text_input_state.move_left(),
@@ -88,14 +98,15 @@ pub fn text_input(
             KeyCode::ArrowUp => text_input_state.move_up(),
             KeyCode::ArrowDown => text_input_state.move_down(),
             KeyCode::Backspace => text_input_state.backspace(),
+            KeyCode::Space => text_input_state.insert_str(" "),
             _ => {}
         }
     }
-    if window.ime_enabled {
-        cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
-        return;
-    }
-    for key in key_evr.read() {
+    // if window.ime_enabled {
+    //     cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
+    //     return;
+    // }
+    for key in evr_keys.read() {
         if key.state == ButtonState::Released {
             continue;
         }
