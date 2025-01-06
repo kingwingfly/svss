@@ -18,11 +18,12 @@ impl Default for AppState {
     fn default() -> Self {
         let file = dirs::data_dir()
             .expect("Data dir should be known")
-            .join("svss")
+            .join("graph project")
             .join("db_file.agdb");
         let mut db = DbImpl::new(&file.to_string_lossy()).unwrap_or_else(|_| {
             panic!("{:?} should be created", file);
         });
+        info!("Database loaded {:?}", file);
         db.transaction_mut(|t| -> Result<(), QueryError> {
             let nodes = ["root", "config", "graph", "sub_config"];
             if t.exec(QueryBuilder::select().aliases().query())?.result != nodes.len() as i64 {
@@ -41,7 +42,7 @@ impl Default for AppState {
                         .to(["sub_config"])
                         .query(),
                 )?;
-                info!("Database initialized: {:?}", file);
+                info!("Database initialized {:?}", file);
             }
             Ok(())
         })

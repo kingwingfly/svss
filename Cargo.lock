@@ -1931,6 +1931,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "graph-project"
+version = "0.1.0"
+dependencies = [
+ "agdb",
+ "bevy",
+ "dirs",
+ "temp-dir",
+]
+
+[[package]]
 name = "grid"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3213,16 +3223,6 @@ name = "svg_fmt"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce5d813d71d82c4cbc1742135004e4a79fd870214c155443451c139c9470a0aa"
-
-[[package]]
-name = "svss"
-version = "0.1.0"
-dependencies = [
- "agdb",
- "bevy",
- "dirs",
- "temp-dir",
-]
 
 [[package]]
 name = "swash"
