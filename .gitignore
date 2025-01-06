@@ -1,2 +1,5 @@
 /target
 .DS_Store
+
+assets/fonts/LICENSE.txt
+assets/fonts/*.otf
