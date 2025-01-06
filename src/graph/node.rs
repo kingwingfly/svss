@@ -22,13 +22,15 @@ fn node_create(
     mut cmds: Commands,
     mut double_click_evr: EventReader<DoubleClickEvent>,
     asset_server: Res<AssetServer>,
-    // double click leads text input target change
     mut text_input_state: ResMut<TextInputState>,
 ) {
     for ev in double_click_evr.read() {
         debug!("{:?}", ev);
         match ev.btn {
             MouseButton::Left => {
+                let window_pos = ev.window_pos;
+                text_input_state.ime_position = window_pos;
+                // double click leads text input target change
                 if text_input_state.target != Entity::PLACEHOLDER {
                     let target = text_input_state.target;
                     text_input_state.submit();
@@ -63,7 +65,7 @@ fn node_create(
                     let mut entity_cmds = p.spawn((
                         Text2d::new("|"),
                         TextFont {
-                            font: asset_server_ref.load("fonts/FiraCode-Retina.ttf"),
+                            font: asset_server_ref.load("fonts/PingFangSC-Regular.otf"),
                             font_size: FONT_WIDTH,
                             ..default()
                         },
@@ -75,19 +77,19 @@ fn node_create(
                     entity_cmds.observe(
                         move |trigger: Trigger<TextRefreshEvent>,
                               mut q_text: Query<&mut Text2d>,
-                              mut q_sprite: Query<&mut Sprite>| {
+                              mut q_sprite: Query<&mut Sprite>,
+                              mut text_input_state: ResMut<TextInputState>,| {
                             let ev = trigger.event();
                             if let Ok(mut t) = q_text.get_mut(trigger.entity()) {
                                 t.0 = ev.text.clone();
                             }
                             if let Ok(mut s) = q_sprite.get_mut(sprite_id) {
-                                s.custom_size = Some(
-                                    CUSTOM_SIZE
-                                        + Vec2::new(
-                                            ev.width * FONT_WIDTH,
-                                            (ev.height - 1.) * FONT_HEIGHT,
-                                        ),
+                                let offset = Vec2::new(
+                                    ev.width * FONT_WIDTH,
+                                    (ev.height - 1.) * FONT_HEIGHT,
                                 );
+                                text_input_state.ime_position = window_pos + offset;
+                                s.custom_size = Some(CUSTOM_SIZE + offset);
                             }
                         },
                     );

@@ -17,13 +17,18 @@ pub fn double_click(
             Some(btn) => {
                 let window = windows.single_mut();
                 let (camera, camera_transform) = q_camera.single();
-                let Some(cursor) = window.cursor_position() else {
+                let Some(window_pos) = window.cursor_position() else {
                     return;
                 };
-                let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor) else {
+                let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, window_pos)
+                else {
                     return;
                 };
-                double_click_evw.send(DoubleClickEvent { btn, world_pos });
+                double_click_evw.send(DoubleClickEvent {
+                    btn,
+                    world_pos,
+                    window_pos,
+                });
             }
         }
     }

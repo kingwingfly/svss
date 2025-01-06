@@ -5,19 +5,28 @@ const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 
 #[derive(Resource, Debug)]
 pub struct TextInputState {
-    input_buf: Vec<String>,
+    input_buf: Vec<Vec<char>>,
+    ime_buf: String,
+    ime_buf_cursor: (usize, usize),
     cursor: (usize, usize),
-    /// influence the rendering of the text
     to_submit: bool,
+    pub ime_state: bool,
+    /// position of IME
+    pub ime_position: Vec2,
+    /// target entity to receive the text
     pub target: Entity,
 }
 
 impl Default for TextInputState {
     fn default() -> Self {
         Self {
-            input_buf: vec![String::new()],
+            input_buf: vec![vec![]],
+            ime_buf: String::new(),
+            ime_buf_cursor: (0, 0),
             cursor: (0, 0),
             to_submit: false,
+            ime_state: false,
+            ime_position: Vec2::ZERO,
             target: Entity::PLACEHOLDER,
         }
     }
@@ -28,6 +37,7 @@ impl TextInputState {
         *self = Self::default();
     }
 
+    /// influence the rendering of the text
     pub fn submit(&mut self) {
         self.to_submit = true;
     }
@@ -37,7 +47,25 @@ impl TextInputState {
     }
 
     pub fn width(&self) -> usize {
-        self.input_buf.iter().map(|s| s.len()).max().unwrap_or(0)
+        self.input_buf
+            .iter()
+            .enumerate()
+            .map(|(i, s)| {
+                let mut width = 0.;
+                for c in s {
+                    if c.is_ascii() {
+                        width += 0.5;
+                    } else {
+                        width += 1.;
+                    }
+                }
+                if i == self.cursor.0 {
+                    width += self.ime_buf.len() as f32;
+                }
+                width.ceil() as usize
+            })
+            .max()
+            .unwrap_or(0)
     }
 
     pub fn move_left(&mut self) {
@@ -85,6 +113,14 @@ impl TextInputState {
     }
 
     pub fn backspace(&mut self) {
+        debug!("{:?}", self);
+        if !self.ime_buf.is_empty() {
+            if self.ime_buf.len() == 1 {
+                self.ime_buf.pop();
+                self.ime_buf_cursor = (0, 0);
+            }
+            return;
+        }
         if self.cursor.1 == 0 {
             if self.cursor.0 == 0 {
                 return;
@@ -92,7 +128,7 @@ impl TextInputState {
             let line = self.input_buf.remove(self.cursor.0);
             self.cursor.0 -= 1;
             self.cursor.1 = self.input_buf[self.cursor.0].len();
-            self.input_buf[self.cursor.0].push_str(&line);
+            self.input_buf[self.cursor.0].extend_from_slice(&line);
         } else {
             self.cursor.1 -= 1;
             self.input_buf[self.cursor.0].remove(self.cursor.1);
@@ -100,8 +136,12 @@ impl TextInputState {
     }
 
     pub fn insert_str(&mut self, s: &str) {
-        self.input_buf[self.cursor.0].insert_str(self.cursor.1, s);
-        self.cursor.1 += s.len();
+        for c in s.chars() {
+            self.input_buf[self.cursor.0].insert(self.cursor.1, c);
+            self.cursor.1 += 1;
+        }
+        self.ime_buf_cursor = (0, 0);
+        self.ime_buf.clear();
     }
 
     pub fn new_line(&mut self) {
@@ -112,6 +152,15 @@ impl TextInputState {
         self.cursor.0 += 1;
         self.cursor.1 = 0;
     }
+
+    pub fn set_ime_buf(&mut self, s: &str, cursor: (usize, usize)) {
+        self.ime_buf = s.to_string();
+        self.ime_buf_cursor = cursor;
+    }
+
+    pub fn troggle_ime_state(&mut self) {
+        self.ime_state = !self.ime_state;
+    }
 }
 
 impl fmt::Display for TextInputState {
@@ -119,7 +168,7 @@ impl fmt::Display for TextInputState {
         match self.to_submit {
             true => {
                 for (i, line) in self.input_buf.iter().enumerate() {
-                    write!(f, "{}", line)?;
+                    write!(f, "{}", line.iter().collect::<String>())?;
                     if i != self.input_buf.len() - 1 {
                         writeln!(f)?;
                     }
@@ -128,9 +177,16 @@ impl fmt::Display for TextInputState {
             false => {
                 for (i, line) in self.input_buf.iter().enumerate() {
                     if i == self.cursor.0 {
-                        write!(f, "{}|{}", &line[..self.cursor.1], &line[self.cursor.1..])?;
+                        write!(
+                            f,
+                            "{}{}|{}{}",
+                            line[..self.cursor.1].iter().collect::<String>(),
+                            &self.ime_buf[..self.ime_buf_cursor.0],
+                            &self.ime_buf[self.ime_buf_cursor.0..],
+                            line[self.cursor.1..].iter().collect::<String>()
+                        )?;
                     } else {
-                        write!(f, "{}", line)?;
+                        write!(f, "{}", line.iter().collect::<String>())?;
                     }
                     if i != self.input_buf.len() - 1 {
                         writeln!(f)?;
