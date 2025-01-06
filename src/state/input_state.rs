@@ -10,8 +10,6 @@ pub struct TextInputState {
     ime_buf_cursor: (usize, usize),
     cursor: (usize, usize),
     to_submit: bool,
-    /// position of IME
-    pub ime_position: Vec2,
     /// target entity to receive the text
     pub target: Entity,
 }
@@ -24,7 +22,6 @@ impl Default for TextInputState {
             ime_buf_cursor: (0, 0),
             cursor: (0, 0),
             to_submit: false,
-            ime_position: Vec2::ZERO,
             target: Entity::PLACEHOLDER,
         }
     }

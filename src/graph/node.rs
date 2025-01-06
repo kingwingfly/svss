@@ -23,13 +23,12 @@ fn node_create(
     mut evr_double_click: EventReader<DoubleClickEvent>,
     asset_server: Res<AssetServer>,
     mut text_input_state: ResMut<TextInputState>,
+    mut q_window: Query<&mut Window>,
 ) {
     for ev in evr_double_click.read() {
         debug!("{:?}", ev);
         match ev.btn {
             MouseButton::Left => {
-                let window_pos = ev.window_pos;
-                text_input_state.ime_position = window_pos;
                 // double click leads text input target change
                 if text_input_state.target != Entity::PLACEHOLDER {
                     let target = text_input_state.target;
@@ -37,16 +36,20 @@ fn node_create(
                     cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
                     text_input_state.reset();
                 }
-                let mut sprite_cmds = cmds.spawn((
+                let mut window = q_window.single_mut();
+                let Some(window_pos) = window.cursor_position() else {
+                    return;
+                };
+                window.ime_position = window_pos;
+                cmds.spawn((
                     Sprite {
                         color: Color::WHITE,
                         custom_size: Some(CUSTOM_SIZE),
                         ..Default::default()
                     },
                     Transform::from_xyz(ev.world_pos.x, ev.world_pos.y, 0.),
-                ));
-                let sprite_id = sprite_cmds.id();
-                sprite_cmds.observe(
+                ))
+                .observe(
                     |trigger: Trigger<Pointer<Drag>>,
                      mut q: ParamSet<(
                         Query<&mut Transform, With<Sprite>>,
@@ -58,41 +61,46 @@ fn node_create(
                             transform.translation.y -= trigger.event().delta.y * scale.y;
                         }
                     },
-                );
-                let target_mut = &mut text_input_state.target;
-                let asset_server_ref = &asset_server;
-                sprite_cmds.with_children(move |p| {
-                    let mut entity_cmds = p.spawn((
-                        Text2d::new("|"),
-                        TextFont {
-                            font: asset_server_ref.load("fonts/SourceHanSansCN-Regular.otf"),
-                            font_size: FONT_WIDTH,
-                            ..default()
-                        },
-                        TextLayout::new_with_justify(JustifyText::Center),
-                        TextColor(BLUE.into()),
-                        Transform::from_xyz(0., 0., 1.),
-                    ));
-                    *target_mut = entity_cmds.id();
-                    entity_cmds.observe(
-                        move |trigger: Trigger<TextRefreshEvent>,
-                              mut q_text: Query<&mut Text2d>,
-                              mut q_sprite: Query<&mut Sprite>,
-                              mut text_input_state: ResMut<TextInputState>,| {
+                )
+                .observe(
+                    move |trigger: Trigger<TextRefreshEvent>,
+                          mut q_sprite: Query<&mut Sprite>,
+                          mut q_window: Query<&mut Window>| {
+                        let mut window = q_window.single_mut();
+                        let Some(window_pos) = window.cursor_position() else {
+                            return;
+                        };
+                        if let Ok(mut s) = q_sprite.get_mut(trigger.entity()) {
                             let ev = trigger.event();
-                            if let Ok(mut t) = q_text.get_mut(trigger.entity()) {
-                                t.0 = ev.text.clone();
-                            }
-                            if let Ok(mut s) = q_sprite.get_mut(sprite_id) {
-                                let offset = Vec2::new(
-                                    ev.width * FONT_WIDTH,
-                                    (ev.height - 1.) * FONT_HEIGHT,
-                                );
-                                text_input_state.ime_position = window_pos + offset;
-                                s.custom_size = Some(CUSTOM_SIZE + offset);
-                            }
-                        },
-                    );
+                            let delta =
+                                Vec2::new(ev.width * FONT_WIDTH, (ev.height - 1.) * FONT_HEIGHT);
+                            s.custom_size = Some(CUSTOM_SIZE + delta);
+                            window.ime_position = window_pos + delta;
+                        }
+                    },
+                )
+                .with_children(|p| {
+                    text_input_state.target = p
+                        .spawn((
+                            Text2d::new("|"),
+                            TextFont {
+                                font: asset_server.load("fonts/SourceHanSansCN-Regular.otf"),
+                                font_size: FONT_WIDTH,
+                                ..default()
+                            },
+                            TextLayout::new_with_justify(JustifyText::Center),
+                            TextColor(BLUE.into()),
+                            Transform::from_xyz(0., 0., 1.),
+                        ))
+                        .observe(
+                            |trigger: Trigger<TextRefreshEvent>, mut q_text: Query<&mut Text2d>| {
+                                let ev = trigger.event();
+                                if let Ok(mut t) = q_text.get_mut(trigger.entity()) {
+                                    t.0 = ev.text.clone();
+                                }
+                            },
+                        )
+                        .id();
                 });
             }
             MouseButton::Right => {}

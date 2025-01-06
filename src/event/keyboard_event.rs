@@ -2,11 +2,16 @@ use bevy::prelude::*;
 
 use crate::state::TextInputState;
 
-#[derive(Debug, Event, Clone)]
+#[derive(Debug, Clone, Component)]
 pub struct TextRefreshEvent {
     pub text: String,
     pub height: f32,
     pub width: f32,
+}
+
+impl Event for TextRefreshEvent {
+    type Traversal = &'static Parent;
+    const AUTO_PROPAGATE: bool = true;
 }
 
 impl From<&TextInputState> for TextRefreshEvent {

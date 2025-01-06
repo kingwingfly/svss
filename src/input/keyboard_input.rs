@@ -75,13 +75,10 @@ pub fn text_input(
     mut text_input_state: ResMut<TextInputState>,
     keys: Res<ButtonInput<KeyCode>>,
     mut evr_keys: EventReader<KeyboardInput>,
-    mut q_window: Query<&mut Window>,
 ) {
     if text_input_state.target == Entity::PLACEHOLDER {
         return;
     }
-    let mut window = q_window.single_mut();
-    window.ime_position = text_input_state.ime_position;
     let target = text_input_state.target;
     for key in keys.get_just_pressed() {
         match key {
@@ -102,10 +99,6 @@ pub fn text_input(
             _ => {}
         }
     }
-    // if window.ime_enabled {
-    //     cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
-    //     return;
-    // }
     for key in evr_keys.read() {
         if key.state == ButtonState::Released {
             continue;
