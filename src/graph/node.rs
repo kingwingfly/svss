@@ -65,7 +65,7 @@ fn node_create(
                     let mut entity_cmds = p.spawn((
                         Text2d::new("|"),
                         TextFont {
-                            font: asset_server_ref.load("fonts/PingFangSC-Regular.otf"),
+                            font: asset_server_ref.load("fonts/SourceHanSansCN-Regular.otf"),
                             font_size: FONT_WIDTH,
                             ..default()
                         },
