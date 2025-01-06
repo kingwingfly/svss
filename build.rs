@@ -20,20 +20,19 @@ fn main() {
         .args(["-L", FONT_URL, "-o", download_file.to_str().unwrap()])
         .status()
         .expect("Failed to download font");
-    println!("cargo::warning=extracting font with `tar`...");
-    Command::new("tar")
+    println!("cargo::warning=extracting font with `unzip`...");
+    Command::new("unzip")
         .args([
-            "-xvf",
             download_file.to_str().unwrap(),
-            "-C",
+            "-d",
             d.path().to_str().unwrap(),
         ])
         .status()
         .expect("Failed to extract font");
-    fs::rename(
+    fs::copy(
         d.path().join("SubsetOTF/CN/SourceHanSansCN-Regular.otf"),
         FONT_PATH,
     )
     .expect("Failed to move font");
-    fs::rename(d.path().join("LICENSE.txt"), LICENSE_PATH).expect("Failed to move license");
+    fs::copy(d.path().join("LICENSE.txt"), LICENSE_PATH).expect("Failed to move license");
 }
