@@ -17,6 +17,7 @@ features = [
     "bevy_window",
     "bevy_winit",
     "bevy_core_pipeline",
+    "bevy_gizmos",
     "bevy_picking",
     "bevy_sprite",
     "bevy_text",

@@ -80,7 +80,7 @@ pub fn text_input(
     if text_input_state.target == Entity::PLACEHOLDER {
         return;
     }
-    if !text_input_state.key_cd.tick(time.delta()).just_finished() {
+    if !text_input_state.key_cd.tick(time.delta()).finished() {
         return;
     }
     text_input_state.key_cd.reset();
