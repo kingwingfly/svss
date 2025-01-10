@@ -63,9 +63,9 @@ fn node_create(
                     },
                 )
                 .observe(
-                    move |trigger: Trigger<TextRefreshEvent>,
-                          mut q_sprite: Query<&mut Sprite>,
-                          mut q_window: Query<&mut Window>| {
+                    |trigger: Trigger<TextRefreshEvent>,
+                     mut q_sprite: Query<&mut Sprite>,
+                     mut q_window: Query<&mut Window>| {
                         let mut window = q_window.single_mut();
                         let Some(window_pos) = window.cursor_position() else {
                             return;
@@ -85,7 +85,7 @@ fn node_create(
                             Text2d::new("|"),
                             TextFont {
                                 font: asset_server.load("fonts/SourceHanSansCN-Regular.otf"),
-                                font_size: FONT_WIDTH,
+                                font_size: FONT_HEIGHT,
                                 ..default()
                             },
                             TextLayout::new_with_justify(JustifyText::Center),

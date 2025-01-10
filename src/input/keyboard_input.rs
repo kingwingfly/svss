@@ -7,6 +7,8 @@ use bevy::{
     prelude::*,
 };
 
+const KEY_CD_SECS: f32 = 0.01;
+
 pub fn ime_toggle(
     btns: Res<ButtonInput<KeyCode>>,
     text_input_state: ResMut<TextInputState>,
@@ -70,20 +72,30 @@ pub fn ime_input(
     }
 }
 
+#[derive(Component, Deref, DerefMut, Debug)]
+pub struct KeyCD(Timer);
+
+impl Default for KeyCD {
+    fn default() -> Self {
+        Self(Timer::from_seconds(KEY_CD_SECS, TimerMode::Once))
+    }
+}
+
 pub fn text_input(
     mut cmds: Commands,
     mut text_input_state: ResMut<TextInputState>,
     keys: Res<ButtonInput<KeyCode>>,
     mut evr_keys: EventReader<KeyboardInput>,
     time: Res<Time>,
+    mut key_cd: Local<KeyCD>,
 ) {
     if text_input_state.target == Entity::PLACEHOLDER {
         return;
     }
-    if !text_input_state.key_cd.tick(time.delta()).finished() {
+    if !key_cd.tick(time.delta()).finished() {
         return;
     }
-    text_input_state.key_cd.reset();
+    key_cd.reset();
     let target = text_input_state.target;
     for key in keys.get_pressed() {
         match key {

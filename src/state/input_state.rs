@@ -10,7 +10,6 @@ pub struct TextInputState {
     ime_buf_cursor: (usize, usize),
     cursor: (usize, usize),
     to_submit: bool,
-    pub key_cd: Timer,
     /// target entity to receive the text
     pub target: Entity,
 }
@@ -23,7 +22,6 @@ impl Default for TextInputState {
             ime_buf_cursor: (0, 0),
             cursor: (0, 0),
             to_submit: false,
-            key_cd: Timer::from_seconds(0.0625, TimerMode::Once),
             target: Entity::PLACEHOLDER,
         }
     }
@@ -51,13 +49,13 @@ impl TextInputState {
                 let mut width = 0.;
                 for c in s {
                     if c.is_ascii() {
-                        width += 0.5;
+                        width += 0.77;
                     } else {
                         width += 1.;
                     }
                 }
                 if i == self.cursor.0 {
-                    width += self.ime_buf.len() as f32;
+                    width += self.ime_buf_cursor.1 as f32 + 0.5;
                 }
                 width.ceil() as usize
             })
