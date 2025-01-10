@@ -49,7 +49,7 @@ impl TextInputState {
                 let mut width = 0.;
                 for c in s {
                     if c.is_ascii() {
-                        width += 0.77;
+                        width += 0.5;
                     } else {
                         width += 1.;
                     }
