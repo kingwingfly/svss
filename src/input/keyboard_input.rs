@@ -83,36 +83,45 @@ impl Default for KeyCD {
 
 pub fn text_input(
     mut cmds: Commands,
-    mut text_input_state: ResMut<TextInputState>,
+    mut input_state: ResMut<TextInputState>,
     keys: Res<ButtonInput<KeyCode>>,
     mut evr_keys: EventReader<KeyboardInput>,
     time: Res<Time>,
     mut key_cd: Local<KeyCD>,
 ) {
-    if text_input_state.target == Entity::PLACEHOLDER {
+    const MODIFIERS1: [KeyCode; 2] = [KeyCode::ShiftLeft, KeyCode::ShiftRight];
+    #[cfg(not(target_os = "macos"))]
+    const MODIFIERS2: [KeyCode; 2] = [KeyCode::ControlLeft, KeyCode::ControlRight];
+    #[cfg(target_os = "macos")]
+    const MODIFIERS2: [KeyCode; 2] = [KeyCode::SuperLeft, KeyCode::SuperRight];
+    if input_state.target == Entity::PLACEHOLDER {
         return;
     }
     if !key_cd.tick(time.delta()).finished() {
         return;
     }
     key_cd.reset();
-    let target = text_input_state.target;
+    let target = input_state.target;
     for key in keys.get_pressed() {
         match key {
-            KeyCode::Enter if keys.pressed(KeyCode::ShiftRight) => text_input_state.new_line(),
+            KeyCode::Enter if keys.any_pressed(MODIFIERS1) => input_state.new_line(),
             KeyCode::Enter => {
-                text_input_state.submit();
-                cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
-                debug!("input submit: {}", *text_input_state);
-                text_input_state.reset();
+                input_state.submit();
+                cmds.trigger_targets(TextRefreshEvent::from(&*input_state), target);
+                debug!("input submit: {}", *input_state);
+                input_state.reset();
                 return;
             }
-            KeyCode::ArrowLeft => text_input_state.move_left(),
-            KeyCode::ArrowRight => text_input_state.move_right(),
-            KeyCode::ArrowUp => text_input_state.move_up(),
-            KeyCode::ArrowDown => text_input_state.move_down(),
-            KeyCode::Backspace => text_input_state.backspace(),
-            KeyCode::Space => text_input_state.insert_str(" "),
+            KeyCode::ArrowLeft if keys.any_pressed(MODIFIERS2) => input_state.move_to_line_head(),
+            KeyCode::ArrowRight if keys.any_pressed(MODIFIERS2) => input_state.move_to_line_tail(),
+            KeyCode::ArrowUp if keys.any_pressed(MODIFIERS2) => input_state.move_to_head(),
+            KeyCode::ArrowDown if keys.any_pressed(MODIFIERS2) => input_state.move_to_tail(),
+            KeyCode::ArrowLeft => input_state.move_left(),
+            KeyCode::ArrowRight => input_state.move_right(),
+            KeyCode::ArrowUp => input_state.move_up(),
+            KeyCode::ArrowDown => input_state.move_down(),
+            KeyCode::Backspace => input_state.backspace(),
+            KeyCode::Space => input_state.insert_str(" "),
             _ => {}
         }
     }
@@ -121,11 +130,9 @@ pub fn text_input(
             continue;
         }
         match &key.logical_key {
-            Key::Character(c) if c.chars().all(|c| !c.is_control()) => {
-                text_input_state.insert_str(c)
-            }
+            Key::Character(c) if c.chars().all(|c| !c.is_control()) => input_state.insert_str(c),
             _ => {}
         }
-        cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
+        cmds.trigger_targets(TextRefreshEvent::from(&*input_state), target);
     }
 }

@@ -110,6 +110,25 @@ impl TextInputState {
         self.cursor.1 = self.cursor.1.min(self.input_buf[self.cursor.0].len());
     }
 
+    pub fn move_to_line_head(&mut self) {
+        self.cursor.1 = 0;
+    }
+
+    pub fn move_to_line_tail(&mut self) {
+        self.cursor.1 = self.input_buf[self.cursor.0].len();
+    }
+
+    pub fn move_to_head(&mut self) {
+        self.cursor = (0, 0);
+    }
+
+    pub fn move_to_tail(&mut self) {
+        self.cursor = (
+            self.input_buf.len() - 1,
+            self.input_buf.last().unwrap().len(),
+        );
+    }
+
     pub fn backspace(&mut self) {
         if !self.ime_buf.is_empty() {
             if self.ime_buf.len() == 1 {
