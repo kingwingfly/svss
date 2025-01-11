@@ -31,9 +31,11 @@ fn node_create(
             MouseButton::Left => {
                 // double click leads text input target change
                 if text_input_state.target != Entity::PLACEHOLDER {
-                    let target = text_input_state.target;
                     text_input_state.submit();
-                    cmds.trigger_targets(TextRefreshEvent::from(&*text_input_state), target);
+                    cmds.trigger_targets(
+                        TextRefreshEvent::from(&*text_input_state),
+                        text_input_state.target,
+                    );
                     text_input_state.reset();
                 }
                 let mut window = q_window.single_mut();
@@ -59,6 +61,39 @@ fn node_create(
                         if let Ok(mut transform) = q.p0().get_mut(trigger.entity()) {
                             transform.translation.x += trigger.event().delta.x * scale.x;
                             transform.translation.y -= trigger.event().delta.y * scale.y;
+                        }
+                    },
+                )
+                .observe(
+                    |trigger: Trigger<Pointer<Click>>,
+                     mut cmds: Commands,
+                     q_children: Query<(&Sprite, &Children)>,
+                     q_text: Query<&Text2d>,
+                     mut text_input_state: ResMut<TextInputState>| {
+                        if let Ok((_, children)) = q_children.get(trigger.entity()) {
+                            for &e in children {
+                                if let Ok(t) = q_text.get(e) {
+                                    if e == text_input_state.target {
+                                        return;
+                                    }
+                                    text_input_state.submit();
+                                    cmds.trigger_targets(
+                                        TextRefreshEvent::from(&*text_input_state),
+                                        text_input_state.target,
+                                    );
+                                    text_input_state.reset();
+                                    text_input_state.input_buf =
+                                        t.0.split("\n")
+                                            .map(|line| line.chars().collect())
+                                            .collect();
+                                    text_input_state.target = e;
+                                    cmds.trigger_targets(
+                                        TextRefreshEvent::from(&*text_input_state),
+                                        text_input_state.target,
+                                    );
+                                    break;
+                                }
+                            }
                         }
                     },
                 )

@@ -5,7 +5,7 @@ const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 
 #[derive(Resource, Debug)]
 pub struct TextInputState {
-    input_buf: Vec<Vec<char>>,
+    pub input_buf: Vec<Vec<char>>,
     pub ime_buf: String,
     ime_buf_cursor: (usize, usize),
     cursor: (usize, usize),
