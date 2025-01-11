@@ -17,19 +17,22 @@ impl Plugin for MyCameraPlugin {
     }
 }
 
-pub fn camera_setup(mut cmds: Commands) {
-    cmds.spawn(Camera2d);
+#[derive(Component)]
+pub struct PrimaryCamera;
+
+fn camera_setup(mut cmds: Commands) {
+    cmds.spawn((Camera2d, PrimaryCamera));
 }
 
-pub fn camera_movement(
-    mut q_camera: Query<(&Camera2d, &mut Transform)>,
+fn camera_movement(
+    mut q_camera: Query<&mut Transform, With<PrimaryCamera>>,
     keyboard: Res<ButtonInput<KeyCode>>,
     text_input_state: Res<TextInputState>,
 ) {
     if text_input_state.target != Entity::PLACEHOLDER {
         return;
     }
-    let (_, mut transform) = q_camera.single_mut();
+    let mut transform = q_camera.single_mut();
     if keyboard.any_pressed([KeyCode::ArrowLeft, KeyCode::KeyA]) {
         transform.translation.x -= MOVE_SPEED;
     } else if keyboard.any_pressed([KeyCode::ArrowRight, KeyCode::KeyD]) {
@@ -40,12 +43,13 @@ pub fn camera_movement(
         transform.translation.y -= MOVE_SPEED;
     } else if keyboard.just_pressed(KeyCode::Space) {
         transform.translation = Vec3::ZERO;
+        transform.scale = Vec3::ZERO;
     }
 }
 
 #[cfg(target_os = "macos")]
-pub fn camera_scale(
-    mut q_camera: Query<&mut Transform, With<Camera2d>>,
+fn camera_scale(
+    mut q_camera: Query<&mut Transform, With<PrimaryCamera>>,
     mut gesture_evr: EventReader<PinchGesture>,
 ) {
     let mut transform = q_camera.single_mut();
@@ -55,8 +59,8 @@ pub fn camera_scale(
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn camera_scale(
-    mut q_camera: Query<&mut Transform, With<Camera2d>>,
+fn camera_scale(
+    mut q_camera: Query<&mut Transform, With<PrimaryCamera>>,
     mut mouse_wheel_evr: EventReader<MouseWheel>,
 ) {
     let mut transform = q_camera.single_mut();

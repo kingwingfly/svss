@@ -55,7 +55,10 @@ impl TextInputState {
                     }
                 }
                 if i == self.cursor.0 {
-                    width += self.ime_buf_cursor.1 as f32 + 0.5;
+                    width += self.ime_buf_cursor.1 as f32;
+                    if !self.to_submit {
+                        width += 0.5; // the cursor
+                    }
                 }
                 width.ceil() as usize
             })
@@ -191,7 +194,7 @@ impl fmt::Display for TextInputState {
 #[derive(Resource, Debug)]
 pub struct DoubleClickState {
     timer: Timer,
-    last_btn: Option<MouseButton>,
+    last_btn: Option<PointerButton>,
 }
 
 impl Default for DoubleClickState {
@@ -208,7 +211,7 @@ impl DoubleClickState {
         self.timer.tick(duration);
     }
 
-    pub fn click(&mut self, btn: Option<MouseButton>) -> Option<MouseButton> {
+    pub fn click(&mut self, btn: Option<PointerButton>) -> Option<PointerButton> {
         match self.last_btn {
             // no btn recorded
             None => {

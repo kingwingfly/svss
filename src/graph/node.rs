@@ -1,6 +1,8 @@
 use crate::{
-    event::{DoubleClickEvent, TextRefreshEvent},
-    state::TextInputState,
+    camera::PrimaryCamera,
+    event::{CreateNodeEvent, EditEvent, TextRefreshEvent},
+    state::{DoubleClickState, TextInputState},
+    utils::MyTime,
 };
 use bevy::{color::palettes::css::*, prelude::*};
 
@@ -12,134 +14,141 @@ pub struct NodePlugin;
 
 impl Plugin for NodePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<DoubleClickEvent>()
-            .add_event::<TextRefreshEvent>()
+        app.add_event::<TextRefreshEvent>()
             .add_systems(Update, (node_create,));
     }
 }
 
 fn node_create(
     mut cmds: Commands,
-    mut evr_double_click: EventReader<DoubleClickEvent>,
+    mut evr_double_click: EventReader<CreateNodeEvent>,
     asset_server: Res<AssetServer>,
     mut text_input_state: ResMut<TextInputState>,
     mut q_window: Query<&mut Window>,
 ) {
     for ev in evr_double_click.read() {
-        debug!("{:?}", ev);
-        match ev.btn {
-            MouseButton::Left => {
-                // double click leads text input target change
-                if text_input_state.target != Entity::PLACEHOLDER {
-                    text_input_state.submit();
-                    cmds.trigger_targets(
-                        TextRefreshEvent::from(&*text_input_state),
-                        text_input_state.target,
-                    );
-                    text_input_state.reset();
+        // text input target change
+        if text_input_state.target != Entity::PLACEHOLDER {
+            text_input_state.submit();
+            cmds.trigger_targets(
+                TextRefreshEvent::from(&*text_input_state),
+                text_input_state.target,
+            );
+            text_input_state.reset();
+        }
+        let mut window = q_window.single_mut();
+        let Some(window_pos) = window.cursor_position() else {
+            return;
+        };
+        window.ime_position = window_pos;
+        cmds.spawn((
+            Sprite {
+                color: Color::WHITE,
+                custom_size: Some(CUSTOM_SIZE),
+                ..Default::default()
+            },
+            Transform::from_xyz(ev.world_pos.x, ev.world_pos.y, 1.),
+        ))
+        .observe(
+            |trigger: Trigger<Pointer<Drag>>,
+             mut q: ParamSet<(
+                Query<&mut Transform, With<Sprite>>,
+                Query<&Transform, With<PrimaryCamera>>,
+            )>| {
+                if trigger.button != PointerButton::Primary {
+                    return;
                 }
+                let scale = q.p1().single().scale;
+                if let Ok(mut transform) = q.p0().get_mut(trigger.entity()) {
+                    transform.translation.x += trigger.event().delta.x * scale.x;
+                    transform.translation.y -= trigger.event().delta.y * scale.y;
+                }
+            },
+        )
+        .observe(
+            |trigger: Trigger<Pointer<Click>>,
+             mut cmds: Commands,
+             q_children: Query<&Children, With<Sprite>>,
+             q_text: Query<&Text2d>,
+             text_input_state: ResMut<TextInputState>,
+             mut time: Local<MyTime>,
+             mut double_click_state: Local<DoubleClickState>| {
+                double_click_state.tick(time.update());
+                if double_click_state.click(Some(trigger.button)) == Some(PointerButton::Primary) {
+                    if let Ok(children) = q_children.get(trigger.entity()) {
+                        for &e in children {
+                            if q_text.contains(e) {
+                                if e == text_input_state.target {
+                                    return;
+                                }
+                                cmds.trigger_targets(EditEvent, e);
+                                return;
+                            }
+                        }
+                    }
+                }
+            },
+        )
+        .observe(
+            |trigger: Trigger<TextRefreshEvent>,
+             mut q_sprite: Query<&mut Sprite>,
+             mut q_window: Query<&mut Window>| {
                 let mut window = q_window.single_mut();
                 let Some(window_pos) = window.cursor_position() else {
                     return;
                 };
-                window.ime_position = window_pos;
-                cmds.spawn((
-                    Sprite {
-                        color: Color::WHITE,
-                        custom_size: Some(CUSTOM_SIZE),
-                        ..Default::default()
+                if let Ok(mut s) = q_sprite.get_mut(trigger.entity()) {
+                    let ev = trigger.event();
+                    let delta = Vec2::new(ev.width * FONT_WIDTH, (ev.height - 1.) * FONT_HEIGHT);
+                    s.custom_size = Some(CUSTOM_SIZE + delta);
+                    window.ime_position = window_pos + delta;
+                }
+            },
+        )
+        .with_children(|p| {
+            text_input_state.target = p
+                .spawn((
+                    Text2d::new("|"),
+                    TextFont {
+                        font: asset_server.load("fonts/SourceHanSansCN-Regular.otf"),
+                        font_size: FONT_HEIGHT,
+                        ..default()
                     },
-                    Transform::from_xyz(ev.world_pos.x, ev.world_pos.y, 0.),
+                    TextLayout::new_with_justify(JustifyText::Center),
+                    TextColor(BLUE.into()),
+                    Transform::from_xyz(0., 0., 2.),
                 ))
                 .observe(
-                    |trigger: Trigger<Pointer<Drag>>,
-                     mut q: ParamSet<(
-                        Query<&mut Transform, With<Sprite>>,
-                        Query<&Transform, With<Camera2d>>,
-                    )>| {
-                        let scale = q.p1().single().scale;
-                        if let Ok(mut transform) = q.p0().get_mut(trigger.entity()) {
-                            transform.translation.x += trigger.event().delta.x * scale.x;
-                            transform.translation.y -= trigger.event().delta.y * scale.y;
+                    |trigger: Trigger<TextRefreshEvent>, mut q_text: Query<&mut Text2d>| {
+                        let ev = trigger.event();
+                        if let Ok(mut t) = q_text.get_mut(trigger.entity()) {
+                            t.0 = ev.text.clone();
                         }
                     },
                 )
                 .observe(
-                    |trigger: Trigger<Pointer<Click>>,
+                    |trigger: Trigger<EditEvent>,
                      mut cmds: Commands,
-                     q_children: Query<(&Sprite, &Children)>,
                      q_text: Query<&Text2d>,
                      mut text_input_state: ResMut<TextInputState>| {
-                        if let Ok((_, children)) = q_children.get(trigger.entity()) {
-                            for &e in children {
-                                if let Ok(t) = q_text.get(e) {
-                                    if e == text_input_state.target {
-                                        return;
-                                    }
-                                    text_input_state.submit();
-                                    cmds.trigger_targets(
-                                        TextRefreshEvent::from(&*text_input_state),
-                                        text_input_state.target,
-                                    );
-                                    text_input_state.reset();
-                                    text_input_state.input_buf =
-                                        t.0.split("\n")
-                                            .map(|line| line.chars().collect())
-                                            .collect();
-                                    text_input_state.target = e;
-                                    cmds.trigger_targets(
-                                        TextRefreshEvent::from(&*text_input_state),
-                                        text_input_state.target,
-                                    );
-                                    break;
-                                }
-                            }
+                        if let Ok(t) = q_text.get(trigger.entity()) {
+                            text_input_state.submit();
+                            cmds.trigger_targets(
+                                TextRefreshEvent::from(&*text_input_state),
+                                text_input_state.target,
+                            );
+                            text_input_state.reset();
+                            text_input_state.input_buf =
+                                t.0.split("\n").map(|line| line.chars().collect()).collect();
+                            text_input_state.target = trigger.entity();
+                            cmds.trigger_targets(
+                                TextRefreshEvent::from(&*text_input_state),
+                                text_input_state.target,
+                            );
                         }
                     },
                 )
-                .observe(
-                    |trigger: Trigger<TextRefreshEvent>,
-                     mut q_sprite: Query<&mut Sprite>,
-                     mut q_window: Query<&mut Window>| {
-                        let mut window = q_window.single_mut();
-                        let Some(window_pos) = window.cursor_position() else {
-                            return;
-                        };
-                        if let Ok(mut s) = q_sprite.get_mut(trigger.entity()) {
-                            let ev = trigger.event();
-                            let delta =
-                                Vec2::new(ev.width * FONT_WIDTH, (ev.height - 1.) * FONT_HEIGHT);
-                            s.custom_size = Some(CUSTOM_SIZE + delta);
-                            window.ime_position = window_pos + delta;
-                        }
-                    },
-                )
-                .with_children(|p| {
-                    text_input_state.target = p
-                        .spawn((
-                            Text2d::new("|"),
-                            TextFont {
-                                font: asset_server.load("fonts/SourceHanSansCN-Regular.otf"),
-                                font_size: FONT_HEIGHT,
-                                ..default()
-                            },
-                            TextLayout::new_with_justify(JustifyText::Center),
-                            TextColor(BLUE.into()),
-                            Transform::from_xyz(0., 0., 1.),
-                        ))
-                        .observe(
-                            |trigger: Trigger<TextRefreshEvent>, mut q_text: Query<&mut Text2d>| {
-                                let ev = trigger.event();
-                                if let Ok(mut t) = q_text.get_mut(trigger.entity()) {
-                                    t.0 = ev.text.clone();
-                                }
-                            },
-                        )
-                        .id();
-                });
-            }
-            MouseButton::Right => {}
-            _ => {}
-        }
+                .id();
+        });
     }
 }
