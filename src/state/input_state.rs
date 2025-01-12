@@ -10,7 +10,7 @@ pub struct TextInputState {
     pub ime_buf: String,
     ime_buf_cursor: (usize, usize),
     cursor: (usize, usize),
-    to_submit: bool,
+    submitted: bool,
     /// target entity to receive the text
     pub target: Entity,
 }
@@ -22,7 +22,7 @@ impl Default for TextInputState {
             ime_buf: String::new(),
             ime_buf_cursor: (0, 0),
             cursor: (0, 0),
-            to_submit: false,
+            submitted: false,
             target: Entity::PLACEHOLDER,
         }
     }
@@ -35,7 +35,7 @@ impl TextInputState {
 
     /// influence the rendering of the text
     pub fn submit(&mut self) {
-        self.to_submit = true;
+        self.submitted = true;
     }
 
     pub fn height(&self) -> usize {
@@ -57,7 +57,7 @@ impl TextInputState {
                 }
                 if i == self.cursor.0 {
                     width += self.ime_buf_cursor.1 as f32;
-                    if !self.to_submit {
+                    if !self.submitted {
                         width += 0.5; // the cursor
                     }
                 }
@@ -178,7 +178,7 @@ impl TextInputState {
 
 impl fmt::Display for TextInputState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.to_submit {
+        match self.submitted {
             true => {
                 for (i, line) in self.input_buf.iter().enumerate() {
                     write!(f, "{}", line.iter().collect::<String>())?;

@@ -1,4 +1,8 @@
-use crate::{camera::PrimaryCamera, event::CreateNodeEvent, state::DoubleClickState};
+use crate::{
+    camera::PrimaryCamera,
+    event::CreateNodeEvent,
+    state::{DoubleClickState, PickState},
+};
 use bevy::prelude::*;
 
 const BACKGROUND_SIZE: Vec2 = Vec2::new(10000., 10000.);
@@ -22,13 +26,20 @@ fn setup_background(mut cmds: Commands) {
     ))
     .observe(
         |trigger: Trigger<Pointer<Drag>>,
-         mut q_camera: Query<(&mut Transform, &Projection), With<PrimaryCamera>>| {
-            if trigger.button == PointerButton::Secondary {
-                let (mut transform, projection) = q_camera.single_mut();
-                if let Projection::Orthographic(projection) = projection {
-                    transform.translation.x -= trigger.delta.x * projection.scale;
-                    transform.translation.y += trigger.delta.y * projection.scale;
+         mut q_camera: Query<(&mut Transform, &Projection), With<PrimaryCamera>>,
+         mut pick_state: ResMut<PickState>| {
+            match trigger.button {
+                PointerButton::Secondary => {
+                    let (mut transform, projection) = q_camera.single_mut();
+                    if let Projection::Orthographic(projection) = projection {
+                        transform.translation.x -= trigger.delta.x * projection.scale;
+                        transform.translation.y += trigger.delta.y * projection.scale;
+                    }
                 }
+                PointerButton::Primary => {
+                    pick_state.active = true;
+                }
+                _ => {}
             }
         },
     )

@@ -1,14 +1,15 @@
-use crate::camera::PrimaryCamera;
+use crate::{camera::PrimaryCamera, state::PickState};
 use bevy::{color::palettes::css::*, prelude::*};
 
 pub fn left_pick(
     mut gizmos: Gizmos,
     btn: Res<ButtonInput<MouseButton>>,
+    pick_state: Res<PickState>,
     mut start: Local<Option<Vec2>>,
     q_window: Query<&Window>,
     q_camera: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
 ) {
-    if !btn.pressed(MouseButton::Left) {
+    if !btn.pressed(MouseButton::Left) || !pick_state.active {
         *start = None;
         return;
     }
@@ -33,11 +34,12 @@ pub fn left_pick(
 pub fn right_pick(
     mut gizmos: Gizmos,
     btn: Res<ButtonInput<MouseButton>>,
+    pick_state: Res<PickState>,
     mut start: Local<Option<Vec2>>,
     q_window: Query<&Window>,
     q_camera: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
 ) {
-    if !btn.pressed(MouseButton::Left) {
+    if !btn.pressed(MouseButton::Left) || !pick_state.active {
         *start = None;
         return;
     }

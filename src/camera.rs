@@ -52,42 +52,36 @@ fn camera_movement(
 
 #[cfg(target_os = "macos")]
 fn camera_scale(
-    mut q_camera: Query<&mut Projection, With<PrimaryCamera>>,
+    mut q_projection: Query<&mut Projection, With<PrimaryCamera>>,
     mut gesture_evr: EventReader<PinchGesture>,
     keyboard: Res<ButtonInput<KeyCode>>,
     text_input_state: Res<TextInputState>,
 ) {
-    let mut projection = q_camera.single_mut();
-    let Projection::Orthographic(ref mut projection) = projection.as_mut() else {
-        unreachable!(
-            "The `Projection` component was explicitly built with `Projection::Orthographic`"
-        );
+    let mut projection = q_projection.single_mut();
+    if let Projection::Orthographic(ref mut projection) = projection.as_mut() {
+        for ev in gesture_evr.read() {
+            projection.scale = (projection.scale - ev.0).clamp(0.1, 5.);
+        }
+        if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
+            projection.scale = 1.;
+        }
     };
-    for ev in gesture_evr.read() {
-        projection.scale = (projection.scale - ev.0).clamp(0.1, 5.);
-    }
-    if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
-        projection.scale = 1.;
-    }
 }
 
 #[cfg(not(target_os = "macos"))]
 fn camera_scale(
-    mut q_camera: Query<&mut Projection, With<PrimaryCamera>>,
+    mut q_projection: Query<&mut Projection, With<PrimaryCamera>>,
     mut mouse_wheel_evr: EventReader<MouseWheel>,
     keyboard: Res<ButtonInput<KeyCode>>,
     text_input_state: Res<TextInputState>,
 ) {
-    let mut projection = q_camera.single_mut();
-    let Projection::Orthographic(ref mut projection) = projection.as_mut() else {
-        unreachable!(
-            "The `Projection` component was explicitly built with `Projection::Orthographic`"
-        );
+    let mut projection = q_projection.single_mut();
+    if let Projection::Orthographic(ref mut projection) = projection.as_mut() {
+        for ev in mouse_wheel_evr.read() {
+            projection.scale = (projection.scale - ev.y).clamp(0.1, 5.);
+        }
+        if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
+            projection.scale = 1.;
+        }
     };
-    for ev in mouse_wheel_evr.read() {
-        projection.scale = (projection.scale - ev.y).clamp(0.1, 5.);
-    }
-    if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
-        projection.scale = 1.;
-    }
 }
