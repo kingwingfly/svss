@@ -1,6 +1,4 @@
-use crate::{
-    camera::PrimaryCamera, event::CreateNodeEvent, state::DoubleClickState, utils::MyTime,
-};
+use crate::{camera::PrimaryCamera, event::CreateNodeEvent, state::DoubleClickState};
 use bevy::prelude::*;
 
 const BACKGROUND_SIZE: Vec2 = Vec2::new(10000., 10000.);
@@ -27,9 +25,7 @@ fn setup_background(mut cmds: Commands) {
          mut evw_double_click: EventWriter<CreateNodeEvent>,
          mut q_window: Query<&mut Window>,
          q_camera: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-         mut time: Local<MyTime>,
          mut double_click_state: Local<DoubleClickState>| {
-            double_click_state.tick(time.update());
             if double_click_state.click(Some(trigger.button)) == Some(PointerButton::Primary) {
                 let window = q_window.single_mut();
                 let (camera, camera_transform) = q_camera.single();

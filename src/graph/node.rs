@@ -2,7 +2,6 @@ use crate::{
     camera::PrimaryCamera,
     event::{CreateNodeEvent, EditEvent, TextRefreshEvent},
     state::{DoubleClickState, TextInputState},
-    utils::MyTime,
 };
 use bevy::{color::palettes::css::*, prelude::*};
 
@@ -71,9 +70,7 @@ fn node_create(
              q_children: Query<&Children, With<Sprite>>,
              q_text: Query<&Text2d>,
              text_input_state: ResMut<TextInputState>,
-             mut time: Local<MyTime>,
              mut double_click_state: Local<DoubleClickState>| {
-                double_click_state.tick(time.update());
                 if double_click_state.click(Some(trigger.button)) == Some(PointerButton::Primary) {
                     if let Ok(children) = q_children.get(trigger.entity()) {
                         for &e in children {

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use core::fmt;
+use std::time::Instant;
 
 const DOUBLE_CLICK_THRESHOLD: f32 = 0.25; // in secs, should <= 0.25
 
@@ -212,6 +213,7 @@ impl fmt::Display for TextInputState {
 
 #[derive(Resource, Debug)]
 pub struct DoubleClickState {
+    time: Instant,
     timer: Timer,
     last_btn: Option<PointerButton>,
 }
@@ -219,6 +221,7 @@ pub struct DoubleClickState {
 impl Default for DoubleClickState {
     fn default() -> Self {
         Self {
+            time: Instant::now(),
             timer: Timer::from_seconds(DOUBLE_CLICK_THRESHOLD, TimerMode::Once),
             last_btn: None,
         }
@@ -226,11 +229,10 @@ impl Default for DoubleClickState {
 }
 
 impl DoubleClickState {
-    pub fn tick(&mut self, duration: std::time::Duration) {
-        self.timer.tick(duration);
-    }
-
     pub fn click(&mut self, btn: Option<PointerButton>) -> Option<PointerButton> {
+        let now = Instant::now();
+        self.timer.tick(now.duration_since(self.time));
+        self.time = now;
         match self.last_btn {
             // no btn recorded
             None => {

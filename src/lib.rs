@@ -6,7 +6,6 @@ mod graph;
 mod input;
 mod setup;
 mod state;
-mod utils;
 
 use bevy::{
     log::{Level, LogPlugin},
