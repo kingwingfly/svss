@@ -50,18 +50,17 @@ fn node_create(
         ))
         .observe(
             |trigger: Trigger<Pointer<Drag>>,
-             mut q: ParamSet<(
-                Query<&mut Transform, With<Sprite>>,
-                Query<&Transform, With<PrimaryCamera>>,
-            )>| {
+             mut q_sprite: Query<&mut Transform, With<Sprite>>,
+             q_camera: Query<&Projection, With<PrimaryCamera>>| {
                 if trigger.button != PointerButton::Primary {
                     return;
                 }
-                let scale = q.p1().single().scale;
-                if let Ok(mut transform) = q.p0().get_mut(trigger.entity()) {
-                    transform.translation.x += trigger.event().delta.x * scale.x;
-                    transform.translation.y -= trigger.event().delta.y * scale.y;
-                }
+                if let Projection::Orthographic(projection) = q_camera.single() {
+                    if let Ok(mut transform) = q_sprite.get_mut(trigger.entity()) {
+                        transform.translation.x += trigger.event().delta.x * projection.scale;
+                        transform.translation.y -= trigger.event().delta.y * projection.scale;
+                    }
+                };
             },
         )
         .observe(

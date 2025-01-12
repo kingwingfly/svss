@@ -21,7 +21,11 @@ impl Plugin for MyCameraPlugin {
 pub struct PrimaryCamera;
 
 fn camera_setup(mut cmds: Commands) {
-    cmds.spawn((Camera2d, PrimaryCamera));
+    cmds.spawn((
+        Camera2d,
+        Projection::from(OrthographicProjection::default_2d()),
+        PrimaryCamera,
+    ));
 }
 
 fn camera_movement(
@@ -32,47 +36,58 @@ fn camera_movement(
     if text_input_state.target != Entity::PLACEHOLDER {
         return;
     }
-    let mut transform = q_camera.single_mut();
+    let mut camera = q_camera.single_mut();
     if keyboard.any_pressed([KeyCode::ArrowLeft, KeyCode::KeyA]) {
-        transform.translation.x -= MOVE_SPEED;
+        camera.translation.x -= MOVE_SPEED;
     } else if keyboard.any_pressed([KeyCode::ArrowRight, KeyCode::KeyD]) {
-        transform.translation.x += MOVE_SPEED;
+        camera.translation.x += MOVE_SPEED;
     } else if keyboard.any_pressed([KeyCode::ArrowUp, KeyCode::KeyW]) {
-        transform.translation.y += MOVE_SPEED;
+        camera.translation.y += MOVE_SPEED;
     } else if keyboard.any_pressed([KeyCode::ArrowDown, KeyCode::KeyS]) {
-        transform.translation.y -= MOVE_SPEED;
+        camera.translation.y -= MOVE_SPEED;
     } else if keyboard.just_pressed(KeyCode::Space) {
-        transform.translation = Vec3::ZERO;
+        camera.translation = Vec3::ZERO;
     }
 }
 
 #[cfg(target_os = "macos")]
 fn camera_scale(
-    mut q_camera: Query<&mut Transform, With<PrimaryCamera>>,
+    mut q_camera: Query<&mut Projection, With<PrimaryCamera>>,
     mut gesture_evr: EventReader<PinchGesture>,
     keyboard: Res<ButtonInput<KeyCode>>,
+    text_input_state: Res<TextInputState>,
 ) {
-    let mut transform = q_camera.single_mut();
+    let mut projection = q_camera.single_mut();
+    let Projection::Orthographic(ref mut projection) = projection.as_mut() else {
+        unreachable!(
+            "The `Projection` component was explicitly built with `Projection::Orthographic`"
+        );
+    };
     for ev in gesture_evr.read() {
-        transform.scale = (transform.scale - ev.0).clamp(Vec3::splat(0.125), Vec3::splat(2.));
+        projection.scale = (projection.scale - ev.0).clamp(0.1, 5.);
     }
-    if keyboard.just_pressed(KeyCode::Space) {
-        transform.scale = Vec3::ONE;
+    if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
+        projection.scale = 1.;
     }
 }
 
 #[cfg(not(target_os = "macos"))]
 fn camera_scale(
-    mut q_camera: Query<&mut Transform, With<PrimaryCamera>>,
+    mut q_camera: Query<&mut Projection, With<PrimaryCamera>>,
     mut mouse_wheel_evr: EventReader<MouseWheel>,
     keyboard: Res<ButtonInput<KeyCode>>,
+    text_input_state: Res<TextInputState>,
 ) {
-    let mut transform = q_camera.single_mut();
+    let mut projection = q_camera.single_mut();
+    let Projection::Orthographic(ref mut projection) = projection.as_mut() else {
+        unreachable!(
+            "The `Projection` component was explicitly built with `Projection::Orthographic`"
+        );
+    };
     for ev in mouse_wheel_evr.read() {
-        transform.scale =
-            (transform.scale - (ev.y / 8.)).clamp(Vec3::splat(0.125), Vec3::splat(2.));
+        projection.scale = (projection.scale - ev.y).clamp(0.1, 5.);
     }
-    if keyboard.just_pressed(KeyCode::Space) {
-        transform.scale = Vec3::ONE;
+    if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
+        projection.scale = 1.;
     }
 }

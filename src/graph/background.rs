@@ -21,6 +21,18 @@ fn setup_background(mut cmds: Commands) {
         Transform::from_xyz(0., 0., 0.),
     ))
     .observe(
+        |trigger: Trigger<Pointer<Drag>>,
+         mut q_camera: Query<(&mut Transform, &Projection), With<PrimaryCamera>>| {
+            if trigger.button == PointerButton::Secondary {
+                let (mut transform, projection) = q_camera.single_mut();
+                if let Projection::Orthographic(projection) = projection {
+                    transform.translation.x -= trigger.delta.x * projection.scale;
+                    transform.translation.y += trigger.delta.y * projection.scale;
+                }
+            }
+        },
+    )
+    .observe(
         |trigger: Trigger<Pointer<Click>>,
          mut evw_double_click: EventWriter<CreateNodeEvent>,
          mut q_window: Query<&mut Window>,
@@ -37,16 +49,6 @@ fn setup_background(mut cmds: Commands) {
                     return;
                 };
                 evw_double_click.send(CreateNodeEvent { world_pos });
-            }
-        },
-    )
-    .observe(
-        |trigger: Trigger<Pointer<Drag>>,
-         mut q_camera: Query<&mut Transform, With<PrimaryCamera>>| {
-            if trigger.button == PointerButton::Secondary {
-                let mut transform = q_camera.single_mut();
-                transform.translation.x -= trigger.delta.x * transform.scale.x;
-                transform.translation.y += trigger.delta.y * transform.scale.y;
             }
         },
     );
