@@ -43,7 +43,6 @@ fn camera_movement(
         transform.translation.y -= MOVE_SPEED;
     } else if keyboard.just_pressed(KeyCode::Space) {
         transform.translation = Vec3::ZERO;
-        transform.scale = Vec3::ONE;
     }
 }
 
@@ -51,10 +50,14 @@ fn camera_movement(
 fn camera_scale(
     mut q_camera: Query<&mut Transform, With<PrimaryCamera>>,
     mut gesture_evr: EventReader<PinchGesture>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 ) {
     let mut transform = q_camera.single_mut();
     for ev in gesture_evr.read() {
         transform.scale = (transform.scale - ev.0).clamp(Vec3::splat(0.125), Vec3::splat(2.));
+    }
+    if keyboard.just_pressed(KeyCode::Space) {
+        transform.scale = Vec3::ONE;
     }
 }
 
@@ -62,10 +65,14 @@ fn camera_scale(
 fn camera_scale(
     mut q_camera: Query<&mut Transform, With<PrimaryCamera>>,
     mut mouse_wheel_evr: EventReader<MouseWheel>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 ) {
     let mut transform = q_camera.single_mut();
     for ev in mouse_wheel_evr.read() {
         transform.scale =
             (transform.scale - (ev.y / 8.)).clamp(Vec3::splat(0.125), Vec3::splat(2.));
+    }
+    if keyboard.just_pressed(KeyCode::Space) {
+        transform.scale = Vec3::ONE;
     }
 }
