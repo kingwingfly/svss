@@ -43,7 +43,7 @@ fn camera_movement(
         transform.translation.y -= MOVE_SPEED;
     } else if keyboard.just_pressed(KeyCode::Space) {
         transform.translation = Vec3::ZERO;
-        transform.scale = Vec3::ZERO;
+        transform.scale = Vec3::ONE;
     }
 }
 
