@@ -1,7 +1,7 @@
-use bevy::prelude::*;
+use bevy::{ecs::entity::EntityHashSet, prelude::*};
 
 #[derive(Resource, Default, Debug)]
 pub struct PickState {
     pub active: bool,
-    pub picked: Vec<Entity>,
+    pub picked: EntityHashSet,
 }

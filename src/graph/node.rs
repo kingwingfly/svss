@@ -4,6 +4,7 @@ use crate::{
     state::{DoubleClickState, PickState, TextInputState},
 };
 use bevy::{color::palettes::css::*, prelude::*};
+use bevy_quadtree::CollisionRect;
 
 const FONT_WIDTH: f32 = 18.0;
 const FONT_HEIGHT: f32 = FONT_WIDTH * 1.2;
@@ -46,6 +47,7 @@ fn node_create(
                 custom_size: Some(CUSTOM_SIZE),
                 ..Default::default()
             },
+            CollisionRect::from(Rect::from_center_size(ev.world_pos, CUSTOM_SIZE)),
             Transform::from_xyz(ev.world_pos.x, ev.world_pos.y, 1.),
         ))
         .observe(
@@ -88,16 +90,17 @@ fn node_create(
         )
         .observe(
             |trigger: Trigger<TextRefreshEvent>,
-             mut q_sprite: Query<&mut Sprite>,
+             mut q_box: Query<(&mut Sprite, &mut CollisionRect)>,
              mut q_window: Query<&mut Window>| {
                 let mut window = q_window.single_mut();
                 let Some(window_pos) = window.cursor_position() else {
                     return;
                 };
-                if let Ok(mut s) = q_sprite.get_mut(trigger.entity()) {
+                if let Ok((mut s, mut c)) = q_box.get_mut(trigger.entity()) {
                     let ev = trigger.event();
                     let delta = Vec2::new(ev.width * FONT_WIDTH, (ev.height - 1.) * FONT_HEIGHT);
                     s.custom_size = Some(CUSTOM_SIZE + delta);
+                    c.set_init_size(CUSTOM_SIZE + delta);
                     window.ime_position = window_pos + delta;
                 }
             },
