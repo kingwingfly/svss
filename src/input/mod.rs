@@ -13,7 +13,13 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(QuadTreePlugin::<CollisionRect, 2, 1000, 1000, 20>::default())
+        app.add_plugins(QuadTreePlugin::<
+            ((CollisionRect, GlobalTransform), (CollisionRect, Sprite)),
+            2,
+            1000,
+            1000,
+            20,
+        >::default())
             .init_resource::<TextInputState>()
             .init_resource::<PickState>()
             .add_systems(Update, (text_input, ime_toggle, ime_input))

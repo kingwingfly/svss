@@ -90,17 +90,16 @@ fn node_create(
         )
         .observe(
             |trigger: Trigger<TextRefreshEvent>,
-             mut q_box: Query<(&mut Sprite, &mut CollisionRect)>,
+             mut q_box: Query<&mut Sprite>,
              mut q_window: Query<&mut Window>| {
                 let mut window = q_window.single_mut();
                 let Some(window_pos) = window.cursor_position() else {
                     return;
                 };
-                if let Ok((mut s, mut c)) = q_box.get_mut(trigger.entity()) {
+                if let Ok(mut s) = q_box.get_mut(trigger.entity()) {
                     let ev = trigger.event();
                     let delta = Vec2::new(ev.width * FONT_WIDTH, (ev.height - 1.) * FONT_HEIGHT);
                     s.custom_size = Some(CUSTOM_SIZE + delta);
-                    c.set_init_size(CUSTOM_SIZE + delta);
                     window.ime_position = window_pos + delta;
                 }
             },

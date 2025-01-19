@@ -62,7 +62,7 @@ fn camera_scale(
         for ev in gesture_evr.read() {
             projection.scale = (projection.scale - ev.0).clamp(0.1, 5.);
         }
-        if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
+        if keyboard.just_pressed(KeyCode::Space) && text_input_state.target == Entity::PLACEHOLDER {
             projection.scale = 1.;
         }
     };
@@ -80,7 +80,7 @@ fn camera_scale(
         for ev in mouse_wheel_evr.read() {
             projection.scale = (projection.scale - ev.y).clamp(0.1, 5.);
         }
-        if keyboard.just_pressed(KeyCode::Space) && text_input_state.target != Entity::PLACEHOLDER {
+        if keyboard.just_pressed(KeyCode::Space) && text_input_state.target == Entity::PLACEHOLDER {
             projection.scale = 1.;
         }
     };
