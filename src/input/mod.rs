@@ -5,18 +5,18 @@ use crate::state::{PickState, TextInputState};
 use bevy::prelude::*;
 use bevy_quadtree::{CollisionRect, QuadTree, QuadTreePlugin};
 use keyboard_input::{ime_input, ime_toggle, text_input};
-use pick_input::pick;
+use pick_input::{delete_picked, pick};
 
-pub(super) type MyQuadTree = QuadTree<40, 10000, 10000, 20>;
+pub(super) type MyQuadTree = QuadTree<2, 1000, 1000, 20>;
 
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(QuadTreePlugin::<CollisionRect, 40, 10000, 10000, 20>::default());
-        app.init_resource::<TextInputState>()
+        app.add_plugins(QuadTreePlugin::<CollisionRect, 2, 1000, 1000, 20>::default())
+            .init_resource::<TextInputState>()
             .init_resource::<PickState>()
             .add_systems(Update, (text_input, ime_toggle, ime_input))
-            .add_systems(Update, (pick,));
+            .add_systems(Update, (pick, delete_picked));
     }
 }

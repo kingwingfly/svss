@@ -6,7 +6,9 @@ edition = "2021"
 [dependencies]
 agdb = { version = "0.9", default-features = false, features = ["derive"] }
 dirs = { version = "5.0.1", default-features = false, features = [] }
-bevy_quadtree = { git = "https://github.com/kingwingfly/bevy_quadtree", branch = "dev" }
+bevy_quadtree = { git = "https://github.com/kingwingfly/bevy_quadtree", branch = "dev", features = [
+    "gizmos",
+] }
 
 [build-dependencies]
 temp-dir = { version = "0.1.14", default-features = false, features = [] }

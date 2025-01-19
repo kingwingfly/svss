@@ -89,11 +89,10 @@ pub fn text_input(
     time: Res<Time>,
     mut key_cd: Local<KeyCD>,
 ) {
-    const MODIFIERS1: [KeyCode; 2] = [KeyCode::ShiftLeft, KeyCode::ShiftRight];
     #[cfg(not(target_os = "macos"))]
-    const MODIFIERS2: [KeyCode; 2] = [KeyCode::ControlLeft, KeyCode::ControlRight];
+    const CTRL_MODIFIER: [KeyCode; 2] = [KeyCode::ControlLeft, KeyCode::ControlRight];
     #[cfg(target_os = "macos")]
-    const MODIFIERS2: [KeyCode; 2] = [KeyCode::SuperLeft, KeyCode::SuperRight];
+    const CTRL_MODIFIER: [KeyCode; 2] = [KeyCode::SuperLeft, KeyCode::SuperRight];
     if input_state.target == Entity::PLACEHOLDER {
         return;
     }
@@ -104,18 +103,22 @@ pub fn text_input(
     let target = input_state.target;
     for key in keys.get_pressed() {
         match key {
-            KeyCode::Enter if keys.any_pressed(MODIFIERS1) => input_state.new_line(),
-            KeyCode::Enter => {
+            KeyCode::Escape => {
                 input_state.submit();
                 cmds.trigger_targets(TextRefreshEvent::from(&*input_state), target);
                 debug!("input submit: {}", *input_state);
                 input_state.reset();
                 return;
             }
-            KeyCode::ArrowLeft if keys.any_pressed(MODIFIERS2) => input_state.move_to_line_head(),
-            KeyCode::ArrowRight if keys.any_pressed(MODIFIERS2) => input_state.move_to_line_tail(),
-            KeyCode::ArrowUp if keys.any_pressed(MODIFIERS2) => input_state.move_to_head(),
-            KeyCode::ArrowDown if keys.any_pressed(MODIFIERS2) => input_state.move_to_tail(),
+            KeyCode::Enter => input_state.new_line(),
+            KeyCode::ArrowLeft if keys.any_pressed(CTRL_MODIFIER) => {
+                input_state.move_to_line_head()
+            }
+            KeyCode::ArrowRight if keys.any_pressed(CTRL_MODIFIER) => {
+                input_state.move_to_line_tail()
+            }
+            KeyCode::ArrowUp if keys.any_pressed(CTRL_MODIFIER) => input_state.move_to_head(),
+            KeyCode::ArrowDown if keys.any_pressed(CTRL_MODIFIER) => input_state.move_to_tail(),
             KeyCode::ArrowLeft => input_state.move_left(),
             KeyCode::ArrowRight => input_state.move_right(),
             KeyCode::ArrowUp => input_state.move_up(),

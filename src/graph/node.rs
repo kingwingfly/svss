@@ -111,7 +111,7 @@ fn node_create(
                     Text2d::new("|"),
                     TextFont {
                         font: asset_server.load("fonts/SourceHanSansCN-Regular.otf"),
-                        font_size: FONT_HEIGHT,
+                        font_size: FONT_WIDTH,
                         ..default()
                     },
                     TextLayout::new_with_justify(JustifyText::Center),
