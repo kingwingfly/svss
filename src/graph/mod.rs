@@ -7,6 +7,7 @@ use background::BackgroundPlugin;
 use bevy::app::Plugin;
 use node::NodePlugin;
 
+pub use background::SIZE;
 pub struct GraphPlugin;
 
 impl Plugin for GraphPlugin {

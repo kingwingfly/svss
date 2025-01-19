@@ -1,13 +1,14 @@
 mod keyboard_input;
 mod pick_input;
 
+use crate::graph::SIZE;
 use crate::state::{PickState, TextInputState};
 use bevy::prelude::*;
 use bevy_quadtree::{CollisionRect, QuadTree, QuadTreePlugin};
 use keyboard_input::{ime_input, ime_toggle, text_input};
 use pick_input::{delete_picked, pick};
 
-pub(super) type MyQuadTree = QuadTree<2, 1000, 1000, 20>;
+pub(super) type MyQuadTree = QuadTree<2, SIZE, SIZE, 20>;
 
 pub struct InputPlugin;
 
@@ -16,8 +17,8 @@ impl Plugin for InputPlugin {
         app.add_plugins(QuadTreePlugin::<
             ((CollisionRect, GlobalTransform), (CollisionRect, Sprite)),
             2,
-            1000,
-            1000,
+            SIZE,
+            SIZE,
             20,
         >::default())
             .init_resource::<TextInputState>()
