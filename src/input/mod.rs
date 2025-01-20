@@ -15,7 +15,7 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(QuadTreePlugin::<
-            ((CollisionRect, GlobalTransform), (CollisionRect, Sprite)),
+            (CollisionRect, (GlobalTransform, Sprite)),
             2,
             SIZE,
             SIZE,

@@ -748,8 +748,8 @@ checksum = "aa65df6a190b7dfc84d79f09cf02d47ae046fa86a613e202c31559e06d8d3710"
 
 [[package]]
 name = "bevy_quadtree"
-version = "0.15.1-alpha1"
-source = "git+https://github.com/kingwingfly/bevy_quadtree?branch=dev#e3b67c266b10af4b5d7a3ee6a4c868a6f749ceb8"
+version = "0.15.1-alpha4"
+source = "git+https://github.com/kingwingfly/bevy_quadtree?branch=dev#764a82e3fe9ca9ba80d016a17c219f92c5fe5b08"
 dependencies = [
  "bevy",
  "parking_lot",
@@ -2027,9 +2027,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.7.0"
+version = "2.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62f822373a4fe84d4bb149bf54e584a7f4abec90e072ed49cda0edea5b95471f"
+checksum = "8c9c992b02b5b4c94ea26e32fe5bccb7aa7d9f390ab5c1221ff895bc7ea8b652"
 dependencies = [
  "equivalent",
  "hashbrown 0.15.2",

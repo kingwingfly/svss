@@ -64,13 +64,13 @@ pub fn pick(
             cd.reset();
             let res = if start.x > world_pos.x {
                 // left pick
-                quadtree.query::<_, QOr<(Overlap, Contain)>>(&CollisionRect::from(
-                    Rect::from_corners(start, world_pos),
-                ))
+                quadtree.query::<QOr<(Overlap, Contain)>>(&CollisionRect::from(Rect::from_corners(
+                    start, world_pos,
+                )))
             } else {
                 // right pick
                 quadtree
-                    .query::<_, Contain>(&CollisionRect::from(Rect::from_corners(start, world_pos)))
+                    .query::<Contain>(&CollisionRect::from(Rect::from_corners(start, world_pos)))
             };
             if cancel_pick {
                 for e in res {
