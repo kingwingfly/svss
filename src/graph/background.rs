@@ -5,7 +5,8 @@ use crate::{
 };
 use bevy::prelude::*;
 
-pub const SIZE: usize = 8192;
+// pub const SIZE: usize = 8192;
+pub const SIZE: usize = 1000;
 const BACKGROUND_SIZE: Vec2 = Vec2::new(SIZE as f32, SIZE as f32);
 
 pub struct BackgroundPlugin;

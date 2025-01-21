@@ -748,8 +748,8 @@ checksum = "aa65df6a190b7dfc84d79f09cf02d47ae046fa86a613e202c31559e06d8d3710"
 
 [[package]]
 name = "bevy_quadtree"
-version = "0.15.1-alpha6"
-source = "git+https://github.com/kingwingfly/bevy_quadtree?branch=dev#45f6934090b689fc7760d8195540403030100f7b"
+version = "0.15.1-alpha8"
+source = "git+https://github.com/kingwingfly/bevy_quadtree?branch=dev#2b42965543026b8c50c9e4f3caa6a5b18948220c"
 dependencies = [
  "bevy_app",
  "bevy_color",
@@ -1674,7 +1674,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3047,7 +3047,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3946,7 +3946,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
