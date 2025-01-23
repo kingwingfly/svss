@@ -8,7 +8,7 @@ use bevy_quadtree::{CollisionRect, QuadTree, QuadTreePlugin};
 use keyboard_input::{ime_input, ime_toggle, text_input};
 use pick_input::{delete_picked, pick};
 
-pub(super) type MyQuadTree = QuadTree<2, 4, SIZE, SIZE, 20>;
+pub(super) type MyQuadTree = QuadTree<0>;
 
 pub struct InputPlugin;
 
@@ -20,7 +20,6 @@ impl Plugin for InputPlugin {
             4,
             SIZE,
             SIZE,
-            20,
         >::default())
             .init_resource::<TextInputState>()
             .init_resource::<PickState>()
